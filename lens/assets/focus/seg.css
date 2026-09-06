@@ -1,0 +1,82 @@
+/* =============================================================================
+   seg.css — the chip that slides.
+
+   A set of tabs has to say which one is chosen. Painting a background under
+   one button and taking it out from under another says it twice and shows the
+   move to nobody. This says it once: a single chip that lives in the track and
+   travels, so the choice moving is the animation, and the labels never move.
+
+   The chip is not an element. It is the track's own ::before and ::after —
+   the fill and the rim — placed by four custom properties that seg.js writes
+   on the group. Nothing is added to the DOM, so every loop over a group's
+   children in focus.js and timeline.js still sees buttons and only buttons.
+
+   Two layers, moving as one, because the fill is a gradient and the rim is a
+   box-shadow and one box cannot cross those against each other: the fill drops
+   out while the chip travels, the rim lights as it lands.
+
+   The scale below is the chip's own, and it is the only copy of it: seg.js
+   reads these six numbers off the page rather than restating them, so the
+   script and the stylesheet cannot drift apart.
+   ============================================================================= */
+
+:root{
+  --ease-pop:cubic-bezier(.34,1.4,.64,1);   /* the overshoot on release */
+  /* The two edges of a move are given different times on purpose: the trailing
+     one lags, and the chip stretches on the way over — the longer the throw,
+     the more it pulls. */
+  --pill-lead:220ms;    /* the edge that leads a move            */
+  --pill-trail:320ms;   /* the edge that trails it — the stretch */
+  --pill-fill:180ms;    /* fill and rim, crossing                */
+  --pill-press:110ms;   /* the press-in snap                     */
+  --pill-pop:240ms;     /* the spring back down                  */
+  --pill-hold:110ms;    /* the afterglow before it settles       */
+}
+
+/* .seg-slide marks a group as one-of-many in the markup; .has-chip is put
+   there by the script. Everything below hangs off the second, so a page whose
+   script never ran keeps the plain background it always had. */
+.seg-slide.has-chip{position:relative;touch-action:pan-y}
+/* the labels ride over the chip */
+.seg-slide.has-chip .seg-btn{position:relative;z-index:1}
+/* and the chip carries the mark now, so the button must not carry it too */
+.seg-slide.has-chip .seg-btn.is-on,
+.seg-slide.has-chip.seg-text .seg-btn.is-on{background:none}
+/* while the chip is being carried, the tab it would land on brightens — the
+   readout of a gesture in flight, not a choice: that is still the app's to make */
+.seg-slide.has-chip .seg-btn.is-near,
+.seg-slide.has-chip.seg-text .seg-btn.is-near{color:var(--control-fg-subtle-active)}
+
+.seg-slide.has-chip::before,
+.seg-slide.has-chip::after{
+  content:"";position:absolute;z-index:0;pointer-events:none;
+  top:2px;bottom:2px;                          /* the track's own padding */
+  left:var(--chip-l,0px);right:var(--chip-r,100%);
+  border-radius:6px;                           /* border_radius/s, as the buttons */
+  transform:scale(var(--chip-sx,1),var(--chip-sy,1));
+  transition:
+    left      var(--chip-dl,var(--pill-trail)) var(--ease),
+    right     var(--chip-dr,var(--pill-trail)) var(--ease),
+    transform var(--chip-dt,var(--pill-press)) var(--chip-et,var(--ease)),
+    opacity   var(--pill-fill)                 var(--ease);
+}
+.seg-slide.has-chip::before{background:var(--mat-12)}
+.seg-slide.has-chip::after{box-shadow:var(--umbra);opacity:0}
+
+/* ---- the four things the chip can be doing ------------------------------ */
+/* nothing is chosen — on the record, no forecast branch is */
+.seg-slide.has-chip[data-chip="off"]::before,
+.seg-slide.has-chip[data-chip="off"]::after{opacity:0}
+/* travelling: the rim carries it and the fill is out of the way, so the move
+   reads as one object crossing rather than two backgrounds swapping */
+.seg-slide.has-chip[data-chip="move"]::before{opacity:0}
+.seg-slide.has-chip[data-chip="move"]::after{opacity:1}
+/* landed: the afterglow, before it settles back to the plain fill */
+.seg-slide.has-chip[data-chip="lit"]::after{opacity:1}
+/* picked up: lit, and lifted off the track */
+.seg-slide.has-chip[data-chip="lift"]::after{opacity:1;box-shadow:var(--umbra),var(--shadow-medium)}
+
+@media (prefers-reduced-motion:reduce){
+  .seg-slide.has-chip::before,
+  .seg-slide.has-chip::after{transition:none}
+}

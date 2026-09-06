@@ -1,0 +1,128 @@
+/* =============================================================================
+   orb.css — Axi, the orb (voice everywhere) and the agent console drawer.
+   Geometry is the Home frame's (docs/SPEC.md §2 · Orb): a 128 circle at (368,528),
+   three 36 round buttons under it, the transcript bubble beside it. The drawer is
+   380 wide on the right edge. Only orb.js writes into #orbLayer and #console.
+   ============================================================================= */
+
+/* ═══ the orb ═════════════════════════════════════════════════════════════ */
+.orb{position:absolute;width:128px;height:175px;z-index:2;
+  transition:left .24s var(--ease),top .24s var(--ease);will-change:left,top}
+.orb.is-drag{transition:none}
+.orb.is-in{animation:orbin .24s var(--ease-pop) both}
+.orb.is-out{animation:orbout .16s var(--ease) both;pointer-events:none}
+@keyframes orbin{from{opacity:0;transform:scale(.72)}to{opacity:1;transform:none}}
+@keyframes orbout{from{opacity:1;transform:none}to{opacity:0;transform:scale(.92)}}
+
+/* the ball: a white circle, the Figma gradient riding on it, the eyes on top.
+   orb-image.png is listed first so a real export shows over the painted gradient
+   (the shipped file is transparent — every pixel of it — so the gradient below
+   is what actually renders), and the glow is a ring behind it that breathes. */
+.orb-ball{position:absolute;left:0;top:0;width:128px;height:128px;border-radius:50%;padding:0;cursor:grab;
+  background:
+    url("../figma/orb-image.png") right -2px top 0 / 210px 128px no-repeat,
+    radial-gradient(60% 32% at 42% 0%,rgba(196,163,252,.95) 0%,rgba(196,163,252,0) 100%),
+    radial-gradient(50% 64% at 4% 50%,#ffc2df 0%,#fbb7e6 30%,rgba(244,169,251,.75) 60%,rgba(244,169,251,0) 100%),
+    linear-gradient(94deg,#f4a9fb 0%,#eaa8fb 20%,#dca8fc 30%,#c5a5fc 45%,#ada2fc 66%,#a99cfc 100%),
+    #fdfdfd;
+  transform-origin:50% 50%;user-select:none;-webkit-user-drag:none;touch-action:none}
+.orb-ball:active{cursor:grabbing}
+.orb-ball::before{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:var(--orb-glow);z-index:-1;
+  animation:orb-breathe 2.4s ease-in-out infinite}
+.orb-ball:focus-visible{outline:2px solid var(--brand);outline-offset:4px}
+.orb-face{position:absolute;left:0;top:0;width:128px;height:128px;pointer-events:none;
+  transition:transform .28s var(--ease)}
+.orb-face svg{display:block;width:128px;height:128px}
+.orb[data-state="listening"] .orb-ball::before,.orb[data-state="hearing"] .orb-ball::before{animation-duration:1.1s}
+.orb[data-state="thinking"] .orb-face{transform:translateY(-2px) scale(.96)}
+.orb[data-state="speaking"] .orb-ball{animation:orb-talk 1.6s ease-in-out infinite}
+.orb[data-state="speaking"] .orb-ball::before{animation-duration:1.6s}
+@keyframes orb-breathe{0%,100%{opacity:.85}50%{opacity:1}}
+@keyframes orb-talk{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+
+/* the three buttons: Microphone (0,124) · X (46,139) · SpeakerHigh (92,124) */
+.orb-btn{position:absolute;transition:background .14s var(--ease),color .14s var(--ease),filter var(--t-state)}
+.orb-mic{left:0;top:124px}
+.orb-x{left:46px;top:139px}
+.orb-spk{left:92px;top:124px}
+.orb-mic[aria-pressed="true"]{background:var(--brand);color:#fff}
+.orb-mic[aria-pressed="true"]:hover{background:var(--brand);filter:brightness(1.08)}
+.orb-spk[aria-pressed="true"]{color:var(--fg-tertiary)}
+
+/* the waveform pill under the buttons: 24 bars of 2px, scaled by the level */
+.orb-wave{position:absolute;left:0;top:184px;width:128px;height:28px;display:flex;align-items:center;justify-content:center;gap:3px;
+  padding:6px 5px;border-radius:100px;background:var(--mat-12);box-shadow:var(--umbra-lit);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s));
+  opacity:0;transform:translateY(-4px);transition:opacity .16s var(--ease),transform .16s var(--ease);pointer-events:none}
+.orb[data-state="listening"] .orb-wave,.orb[data-state="hearing"] .orb-wave{opacity:1;transform:none}
+.orb-wave i{display:block;width:2px;border-radius:1000px;background:var(--fg-primary);flex:none;
+  transform-origin:center;transition:transform .12s var(--ease)}
+
+/* the bubble beside the orb: what was heard, the thinking dots, the reply */
+.orb-bubble{position:absolute;left:140px;top:0;width:max-content;max-width:320px;min-width:120px;overflow-y:auto;scrollbar-width:none;
+  padding:8px 8px 10px 12px;border-radius:12px;background:var(--mat-over);
+  box-shadow:var(--spectrum),var(--shadow-medium);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s));
+  font-size:14px;line-height:20px;color:var(--control-fg-subtle);
+  animation:bubblein .16s var(--ease) both;transform-origin:left top}
+.orb-bubble[data-side="left"]{left:auto;right:140px;transform-origin:right top}
+@keyframes bubblein{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+.orb-bubble.is-out{opacity:0;transition:opacity .2s var(--ease)}
+.orb-bubble-head{display:flex;align-items:center;gap:8px;min-height:20px}
+.orb-bubble-label{flex:1;min-width:0;font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:nowrap}
+.orb-bubble-head .btn28{margin:-4px -2px -4px 0;color:var(--fg-tertiary)}
+.orb-bubble p{padding:2px 4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.orb-bubble p:empty{display:none}
+.orb-bubble .thinking{padding:4px 0 0}
+/* while the reply is being read a light travels along its words (the Lens' .msg-live) */
+.orb[data-state="speaking"] .orb-bubble p{
+  color:transparent;
+  background-image:linear-gradient(100deg,
+    rgba(255,255,255,.34) 0%,rgba(255,255,255,.34) 34%,
+    #d5d4ff 44%,#fdfdfd 50%,#a8b8ff 56%,
+    rgba(255,255,255,.34) 66%,rgba(255,255,255,.34) 100%);
+  background-size:280% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  animation:orb-shimmer 2.6s linear infinite}
+@keyframes orb-shimmer{from{background-position:180% 0}to{background-position:-80% 0}}
+
+/* ═══ the agent console ═══════════════════════════════════════════════════ */
+.console{width:380px;display:flex;flex-direction:column;border-radius:16px;background:var(--mat-12);
+  box-shadow:var(--spectrum),var(--umbra-lit),var(--shadow-medium);
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum));
+  overflow:hidden;transform:translateX(calc(100% + 16px));opacity:.6;
+  transition:transform .22s var(--ease),opacity .22s var(--ease)}
+.console.is-open{transform:none;opacity:1}
+.con-head{flex:none;display:flex;align-items:center;gap:8px;height:52px;padding:8px 8px 8px 16px;border-bottom:1px solid var(--border-ghost)}
+.con-title{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-size:16px;font-weight:500;line-height:24px;white-space:nowrap}
+.con-title span{padding-bottom:1px}
+.con-dot{width:6px;height:6px;border-radius:50%;background:var(--positive);flex:none;
+  box-shadow:0 0 0 0 rgba(59,199,125,.5)}
+.con-dot.is-busy{animation:con-pulse 1.1s var(--ease) infinite}
+@keyframes con-pulse{0%{box-shadow:0 0 0 0 rgba(59,199,125,.55)}70%{box-shadow:0 0 0 6px rgba(59,199,125,0)}100%{box-shadow:0 0 0 0 rgba(59,199,125,0)}}
+.con-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:6px 8px 8px;scrollbar-width:thin;scrollbar-color:rgba(253,253,253,.12) transparent;
+  font-family:var(--font-mono);font-size:12px;line-height:16px;overscroll-behavior:contain}
+.con-body::-webkit-scrollbar{width:6px}
+.con-body::-webkit-scrollbar-thumb{background:rgba(253,253,253,.12);border-radius:3px}
+.con-row{display:grid;grid-template-columns:78px minmax(0,1fr) 52px;grid-template-rows:auto auto;column-gap:8px;
+  padding:4px 8px;border-radius:6px;animation:con-in .18s var(--ease) both}
+.con-row:hover{background:var(--control-bg-transparent-hover)}
+@keyframes con-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.con-time{color:var(--fg-tertiary);white-space:nowrap;font-variant-numeric:tabular-nums}
+.con-tool{color:var(--fg-primary);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.con-args{grid-column:2;color:var(--fg-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.con-args:empty{display:none}
+.con-ms{grid-row:1;grid-column:3;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.con-ms[data-tone="positive"]{color:var(--positive)}
+.con-ms[data-tone="warning"]{color:var(--warning)}
+.con-ms[data-tone="negative"]{color:var(--negative)}
+.con-empty{padding:24px 8px;text-align:center;font-family:var(--font);font-size:12px;line-height:16px;color:var(--fg-tertiary)}
+.con-foot{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:8px;border-top:1px solid var(--border-ghost)}
+.con-foot .con-count{flex:1;min-width:0;font-size:12px;line-height:16px;color:var(--fg-tertiary);padding-left:8px;white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  .orb,.orb.is-in,.orb.is-out,.orb-bubble,.con-row{animation:none;transition:none}
+  .orb-ball::before,.orb[data-state="speaking"] .orb-ball,.con-dot.is-busy{animation:none}
+  .orb[data-state="speaking"] .orb-bubble p{animation:none;color:var(--fg-primary);background:none;-webkit-background-clip:border-box;background-clip:border-box}
+  .orb-wave i{transition:none}
+}

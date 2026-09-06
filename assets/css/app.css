@@ -1,0 +1,417 @@
+/* =============================================================================
+   app.css — the shell and the atoms every module shares.
+   Geometry is the Figma frame's (docs/SPEC.md §2). Modules own their own sheets:
+   chat.css · timeline.css · widgets.css · library.css · pages.css · orb.css.
+   ============================================================================= */
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);overflow:hidden;
+  font-family:var(--font);font-size:14px;line-height:20px;font-weight:400;color:var(--fg-primary);
+  letter-spacing:0;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+input,textarea{font:inherit;color:inherit}
+p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:var(--info);text-decoration:none}
+a:hover{text-decoration:underline}
+img,svg{display:block}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.seg-btn:focus-visible,.sb-chat:focus-visible,.rail-btn:focus-visible,.sb-item:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--brand)}
+::selection{background:rgba(125,123,255,.35)}
+
+/* ═══ atoms ═══════════════════════════════════════════════════════════════ */
+.ic{display:block;width:16px;height:16px;flex:none;fill:currentColor;overflow:visible}
+.ic16{width:16px;height:16px}
+.ic20{width:20px;height:20px}
+.ic24{width:24px;height:24px}
+
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;
+  color:var(--control-fg-subtle);transition:background var(--t-state),color var(--t-state)}
+.btn-ghost:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.btn-ghost.is-on,.btn-ghost[aria-pressed="true"],.btn-ghost[aria-expanded="true"]{background:var(--control-bg-transparent-pressed);color:var(--fg-primary)}
+.btn-ghost[disabled]{opacity:.35;cursor:default}
+.btn-ghost[disabled]:hover{background:none}
+/* a toggle whose "on" is the resting state — the header's Cards button keeps the widgets column
+   open and every frame draws it plain, so only its hover speaks; aria-pressed still tells the truth */
+.btn-ghost.btn-quiet[aria-pressed="true"]{background:none;color:var(--control-fg-subtle)}
+.btn-ghost.btn-quiet[aria-pressed="true"]:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.btn28{width:28px;height:28px;padding:6px;border-radius:6px}
+.btn36{width:36px;height:36px;padding:8px}
+.btn48{width:48px;height:48px;padding:12px;border-radius:10px}
+/* a control lifted off scenery — the orb's three, the fullscreen chrome */
+.btn-round{border-radius:100px;background:var(--mat-12);box-shadow:var(--umbra-lit);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s));color:var(--fg-primary)}
+.btn-round:hover{background:var(--mat-12);filter:brightness(1.15)}
+/* the light button: "Ask Axsi", Commit */
+.btn-light{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;min-width:72px;
+  padding:8px 12px;border-radius:8px;background:var(--control-bg-secondary-inverse);color:var(--control-fg-subtle-inverse);
+  font-size:14px;font-weight:500;line-height:20px;white-space:nowrap;transition:filter var(--t-state)}
+.btn-light:hover{filter:brightness(.94)}
+.btn-light span{padding-bottom:1px}
+/* small text buttons inside cards: Commit / Reject / Back to now */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:56px;padding:4px 8px;border-radius:6px;
+  font-size:12px;font-weight:500;line-height:16px;transition:filter var(--t-state),background .18s var(--ease),color .18s var(--ease)}
+.btn:hover{filter:brightness(1.12)}
+.btn-white{background:var(--control-bg-secondary-inverse);color:var(--control-fg-subtle-inverse)}
+.btn-glass{background:var(--mat-12);color:var(--control-fg-subtle)}
+.btn-grey{background:var(--control-bg-tretiary);color:var(--control-fg-subtle)}
+.btn[data-done]{background:var(--control-bg-transparent-pressed);color:var(--control-fg-subtle);pointer-events:none}
+
+.avatar{width:36px;height:36px;flex:none;border-radius:8px;background:var(--control-bg-secondary-inverse);
+  color:var(--control-fg-subtle-inverse);font-size:14px;font-weight:700;line-height:20px;
+  display:inline-flex;align-items:center;justify-content:center}
+
+/* the seg: a track and the chip that marks the choice */
+.seg{display:inline-flex;gap:4px;padding:2px;border-radius:8px;background:var(--mat-05)}
+.seg-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:4px 6px;border-radius:6px;
+  font-size:12px;font-weight:400;line-height:16px;color:var(--control-fg-subtle);white-space:nowrap;
+  transition:background .14s var(--ease),color .14s var(--ease)}
+.seg-btn span,.seg-btn{padding-top:4px;padding-bottom:4px}
+.seg-btn:hover{color:var(--fg-primary)}
+.seg-btn.is-on{background:var(--mat-12);color:var(--control-fg-subtle-active)}
+.seg-icons{gap:6px;background:var(--mat-b05)}
+.seg-icons .seg-btn{padding:6px;color:var(--fg-primary)}
+.seg-icons .seg-btn.is-on{background:var(--mat-12)}
+
+/* chips and badges */
+.chip{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;padding:2px 6px;border-radius:6px;
+  font-size:12px;line-height:14px;color:var(--control-fg-subtle);background:var(--control-bg-transparent-hover);
+  box-shadow:inset 0 0 0 1px var(--border-ghost)}
+.badge{display:inline-flex;align-items:center;justify-content:center;height:16px;padding:2px 4px;border-radius:2px;
+  font-size:12px;font-weight:500;line-height:12px;white-space:nowrap;
+  color:var(--fg-secondary);background:rgba(253,253,253,.08)}
+/* badge grounds are the design file's `alerts/bg/secondary/*` — solid, as the Library frame paints
+   them (TRUE #024626, AxionV1 and tags #093077, Unspecified #985b0b). The file has no secondary
+   negative, so that one stays a tint. All four are tokens.css's --alert-bg-*. */
+.badge--positive{color:var(--positive);background:var(--alert-bg-positive)}
+.badge--info{color:var(--info);background:var(--alert-bg-info)}
+.badge--warning{color:var(--warning);background:var(--alert-bg-warning)}
+.badge--negative{color:var(--negative);background:var(--alert-bg-negative)}
+.badge--tag{font-size:10px;font-weight:500;line-height:12px;padding:0 4px 2px}
+.dot{width:6px;height:6px;flex:none;border-radius:1000px;background:var(--dot,var(--fg-tertiary))}
+/* one switch for the whole build — the menu's, the Library's view settings', the Settings page's.
+   The row that owns it carries aria-checked; the switch itself is only the picture of the state. */
+.switch{position:relative;flex:none;width:28px;height:16px;border-radius:8px;background:var(--control-bg-tretiary);
+  transition:background var(--t-state)}
+.switch::after{content:"";position:absolute;left:2px;top:2px;width:12px;height:12px;border-radius:50%;background:#fff;
+  transition:transform var(--t-state)}
+[aria-checked="true"]>.switch,[aria-checked="true"] .switch{background:var(--brand)}
+[aria-checked="true"]>.switch::after,[aria-checked="true"] .switch::after{transform:translateX(12px)}
+/* a signal card is shown in four places — the MiniMap's strip, the Signals widget, the Signals
+   page, the compact row in a thread — and reads the same in all of them: the Lens's own rhythm
+   (focus.css .sig), a title clamped to two lines on 17.2 over a meta line on 15. Only the
+   thumbnail's size differs (--sig-thumb), and the thread's row clamps its title to one line. */
+.sig-thumb{position:relative;flex:none;width:var(--sig-thumb,64px);height:var(--sig-thumb,64px);border-radius:4px;
+  overflow:hidden;background:var(--control-bg-transparent-hover)}
+.sig-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
+/* the Lens's globe still, cropped to the disc — the same crop wherever a thumbnail shows it.
+   It stands AFTER .sig-thumb img on purpose: the two tie at (0,1,1) and the later one wins. */
+img.fit-globe{position:absolute;inset:auto;left:-45.89%;top:-45.89%;width:191.77%;height:191.77%;max-width:none;object-fit:cover}
+.sig-title{max-height:34.4px;overflow:hidden;overflow-wrap:anywhere;color:var(--fg-primary);
+  font-size:14px;font-weight:500;line-height:17.2px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.sig-meta{display:flex;align-items:center;gap:4px;max-width:100%;white-space:nowrap;color:var(--fg-meta);
+  font-size:12px;font-weight:500;line-height:15px}
+.sig-meta b{font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.sig-meta .dot{margin-top:2px}
+
+/* the material every plate on the screen is cut from */
+.panel{position:relative;isolation:isolate;border-radius:16px;box-shadow:var(--umbra)}
+.panel::before{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--mat-05);
+  box-shadow:var(--umbra-lit);pointer-events:none;z-index:0}
+.panel>*{position:relative;z-index:1}
+
+/* ═══ the shell ═══════════════════════════════════════════════════════════ */
+.app{position:fixed;inset:0;display:flex;gap:var(--gap);padding:var(--gap);isolation:isolate}
+.rail{flex:none;width:var(--rail-w)}
+.main{flex:1 1 auto;min-width:0;display:flex;overflow:hidden}
+html[data-concept="agent"] .rail,html[data-rail="off"] .rail{display:none}
+/* the slivers that bring a folded rail / sidebar back stand where the fold was, and whatever they
+   would cover steps aside: the sidebar's nav drops under the rail peek, a page header's first
+   button moves right of the sidebar peek (8 + 36 + 8 each time) */
+.rail-peek{position:absolute;left:8px;top:8px;z-index:10;width:36px;height:36px;padding:8px;
+  color:var(--control-fg-subtle);background:var(--mat-05);box-shadow:var(--umbra)}
+html[data-rail="off"] .rail-peek{display:inline-flex!important}
+html[data-concept="agent"] .rail-peek{display:none!important}
+html[data-rail="off"]:not([data-concept="agent"]) .sidebar{padding-top:47px}
+.sidebar-peek{position:absolute;left:8px;top:8px;z-index:6}
+html[data-sidebar="off"] .sidebar-peek{display:inline-flex!important}
+html[data-rail="off"]:not([data-concept="agent"]) .sidebar-peek{left:44px}
+html[data-sidebar="off"] .gen-header{padding-left:52px}
+html[data-rail="off"]:not([data-concept="agent"])[data-sidebar="off"] .gen-header{padding-left:88px}
+
+/* ─── the Gen Sidebar ──────────────────────────────────────────────────── */
+.rail{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 4px 4px;overflow:hidden}
+.rail-logo{display:flex;align-items:center;justify-content:center;width:100%;padding:4px;border-radius:8px;transition:background var(--t-state)}
+.rail-logo:hover{background:var(--control-bg-transparent-hover)}
+.rail-nav{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;width:100%}
+.rail-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:48px;height:48px;padding:12px;
+  border-radius:10px;color:var(--control-fg-subtle);transition:background var(--t-state),color var(--t-state)}
+.rail-nav .rail-btn{margin-bottom:-4px}
+.rail-nav .rail-btn:last-child{margin-bottom:0}
+.rail-btn:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.rail-btn.is-on{background:var(--control-bg-transparent-hover);border-radius:12px;color:var(--control-fg-subtle-active)}
+.rail-collapse{align-items:flex-start;border-radius:8px;color:var(--fg-inverse-tertiary)}   /* #797979 in the frame, unlike the sidebar's */
+.rail-profile{width:100%;display:flex;align-items:center;justify-content:center;padding:8px;border-top:1px solid var(--border-ghost)}
+
+/* ─── the project sidebar ──────────────────────────────────────────────── */
+/* the frame draws the 1px rule inside the 350 box and still lays the rows out 334 wide, so the
+   right padding gives the pixel the border takes */
+.sidebar{position:relative;flex:none;width:var(--sidebar-w);min-height:0;display:flex;flex-direction:column;gap:4px;
+  padding:3px 7px 0 8px;border-right:1px solid var(--border-ghost)}
+html[data-sidebar="off"] .sidebar{display:none}
+.sb-tools{position:absolute;right:7px;top:7px;display:flex;z-index:3}
+.sb-logo{display:none;align-items:flex-start;gap:8px;padding:0 4px;width:100%}
+html[data-concept="agent"] .sb-logo{display:flex}
+.sb-wordmark{display:flex;padding:13px 8px;border-radius:6px}
+.sb-wordmark img{width:114.498px;height:18px}
+.sb-nav{display:flex;flex-direction:column;width:100%}
+.sb-item{display:flex;align-items:center;gap:8px;width:100%;min-width:96px;height:48px;padding:12px 0 12px 12px;
+  margin-bottom:-4px;border-radius:10px;color:var(--control-fg-subtle);font-size:16px;font-weight:500;line-height:24px;
+  white-space:nowrap;transition:background var(--t-state),color var(--t-state)}
+.sb-item:last-child{margin-bottom:0}
+.sb-item:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+/* no resting state on a nav item: the frames draw the current page's item plain; aria-current carries it.
+   The 16/24 label already sits the frame's 1px above the box centre — no padding correction here */
+/* the list runs to the panel's own edge and is clipped only by its radius; the 16 of §2's
+   `padding 3 8 16` is the scroll content's, so the last row can be brought fully into view */
+.sb-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;display:flex;flex-direction:column;gap:4px;
+  padding-bottom:16px;overscroll-behavior:contain}
+.sb-scroll::-webkit-scrollbar{width:0}
+.sb-section{display:flex;flex-direction:column;gap:4px;flex:none}
+.sb-section-head{display:flex;align-items:center;gap:8px;width:100%;padding:16px 8px 4px}
+.sb-section-title{flex:1;min-width:0;font-size:14px;line-height:16px;font-weight:400;color:var(--control-fg-subtle-ghost);
+  text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:4px}
+.sb-section-add{display:grid;place-items:center;width:16px;height:16px;border-radius:4px;color:var(--fg-tertiary);
+  transition:background var(--t-state),color var(--t-state)}
+.sb-section-add:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.sb-section[data-open="false"] .sb-chat{display:none}
+.sb-chat{display:flex;align-items:flex-end;gap:4px;width:100%;min-width:72px;height:36px;padding:8px 0 8px 12px;border-radius:8px;
+  color:var(--control-fg-subtle);font-size:14px;font-weight:500;line-height:20px;white-space:nowrap;overflow:hidden;
+  transition:background var(--t-state),color var(--t-state)}
+.sb-chat .ic{color:var(--dot,var(--dot-ghost))}
+.sb-chat span{min-width:0;overflow:hidden;text-overflow:ellipsis;padding-right:8px}
+.sb-chat:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.sb-chat.is-on{background:var(--control-bg-transparent-pressed);color:var(--fg-primary)}
+.sb-profile{display:none;position:absolute;left:0;right:0;bottom:0;align-items:center;gap:8px;padding:11px 16px 12px;
+  border-top:1px solid var(--border-ghost);box-shadow:0 0 .5px 0 var(--border-primary);
+  background:var(--mat-05);backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum))}
+html[data-concept="agent"] .sb-profile{display:flex}
+html[data-concept="agent"] .sb-scroll{padding-bottom:60px}
+/* name 20 + mail 10 + 4 under, centred beside the 36 avatar: the name's glyphs land at 1030, the mail's at 1046 */
+.sb-profile-text{flex:1;min-width:0;display:flex;flex-direction:column;padding-bottom:4px}
+.sb-profile-name{font-size:14px;font-weight:500;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-profile-mail{font-size:12px;line-height:10px;color:var(--fg-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ─── pages ────────────────────────────────────────────────────────────── */
+.pages{flex:1 1 auto;min-width:0;position:relative;isolation:isolate}
+.page{position:absolute;inset:0;overflow:hidden}
+.gen-header{height:var(--header-h);display:flex;align-items:center;padding:8px}
+.hdr-wrap{display:flex;align-items:center;gap:2px;flex:none}
+.hdr-right{gap:0;justify-content:flex-end}
+.hdr-title{display:flex;align-items:center;gap:8px;flex:1;min-width:0;height:36px;border-radius:8px;padding:0 4px 0 0;
+  transition:background var(--t-state)}
+.hdr-title:hover{background:var(--control-bg-transparent-hover)}
+.hdr-title span{font-size:16px;font-weight:500;line-height:24px;padding-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-title .caret{color:var(--fg-tertiary);transition:transform .18s var(--ease)}
+.hdr-title[aria-expanded="true"] .caret{transform:rotate(180deg)}
+.project-icon img{width:18.64px;height:14.87px}
+
+/* ─── the chat page's frame: header, thread, composer, widgets ─────────── */
+.page-chat{display:block}
+.chat-header{position:absolute;left:0;top:0;right:calc(var(--widgets-w) + var(--widgets-inset) + var(--widgets-gap));z-index:5}
+/* the blur rides on a pseudo inset 1px from the top: a backdrop filter that reached the panel's
+   top edge smeared the umbra's lit rim into nothing under the header, leaving a line that started
+   at the widgets column */
+.chat-header::before{content:"";position:absolute;inset:1px 0 0;z-index:-1;pointer-events:none;
+  backdrop-filter:blur(var(--blur-window));-webkit-backdrop-filter:blur(var(--blur-window))}
+html[data-widgets="off"] .chat-header{right:0}
+/* with no widgets column to narrow, there is nothing for the cap to hold back: the column is
+   free to reach the 768 it is drawn at again. (0,1,1) — it outranks the ladder's :root rungs. */
+html[data-widgets="off"]{--reading-max:var(--chat-w)}
+/* The column is drawn 768 wide and left‑anchored 128 from the sidebar (§2). Narrower, it keeps
+   both promises it can: it never grows past the 768 it was drawn at, and it centres in whatever
+   band is left to it — so the blocks inside it always share one left and one right edge, and the
+   column slides instead of jumping when the widgets column narrows or steps off the page. */
+.thread{position:absolute;left:var(--chat-left);top:0;bottom:72px;width:var(--chat-w);max-width:var(--reading-max,var(--chat-w));
+  margin-inline:auto;z-index:1;
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;padding:68px 0 16px}
+.thread::-webkit-scrollbar{width:0}
+.thread:focus-visible{outline:none}
+.composer{position:absolute;left:var(--chat-left);bottom:24px;width:var(--chat-w);max-width:var(--reading-max,var(--chat-w));
+  margin-inline:auto;z-index:4}
+html[data-widgets="off"] .thread,html[data-widgets="off"] .composer{left:calc(50% - var(--chat-w) / 2)}
+.input{position:relative;display:flex;align-items:center;height:48px;border-radius:16px;background:var(--mat-12);box-shadow:var(--umbra);
+  transition:box-shadow .16s var(--ease)}
+.input:has(.ask-field:focus){box-shadow:var(--umbra),inset 0 0 0 1px rgba(125,123,255,.6)}
+.input .btn48{flex:none}
+.field{flex:1;min-width:0;display:flex;align-items:center;padding:0 8px;height:48px}
+.ask-field{width:100%;border:0;background:none;color:var(--fg-primary);font-size:16px;line-height:24px;padding:0;
+  outline:0;resize:none;max-height:120px;overflow-y:auto;scrollbar-width:none}
+/* the frame reads "Ask anything..." at #9e9e9e and the model name at #dcdcdc (§2 wrote #797979 for both) */
+.ask-field::placeholder{color:var(--fg-tertiary)}
+.model-btn{flex:none;height:36px;min-width:72px;padding:8px 12px;margin-right:-8px;gap:6px;
+  color:var(--control-fg-subtle);font-size:14px;font-weight:500;line-height:20px;white-space:nowrap}
+.model-btn:hover{color:var(--fg-primary)}
+.model-btn span{padding-bottom:1px}
+/* §2's (351,959) in the 1064 panel, hung from the bottom so the bloom stays under the input at any height */
+.glow{position:absolute;left:1px;bottom:-223px;width:927px;height:328px;pointer-events:none;z-index:0}
+.glow img{position:absolute;left:-13.81%;top:-39.02%;width:127.62%;height:178.04%;max-width:none}
+.widgets{position:absolute;right:var(--widgets-inset);top:8px;bottom:0;width:var(--widgets-w);z-index:3;display:flex;flex-direction:column;gap:8px;
+  padding:0 0 8px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain}
+.widgets::-webkit-scrollbar{width:0}
+html[data-widgets="off"] .widgets{display:none}
+.fullscreen{position:absolute;left:8px;top:8px;right:8px;bottom:8px;z-index:8}   /* 8 from the sidebar's edge: the frame's 358 − 350 */
+/* a widget standing full has the whole page; the fold-back slivers wait underneath it */
+html:not([data-full="off"]) .sidebar-peek{display:none!important}
+/* the agent-centric frame (5414:188163) seats the chat column at 515 of a 1904 panel and the
+   glow 35 in from the sidebar's edge; the widgets keep their 8px inset. The 165 is the frame's
+   number at the frame's size only: html[data-concept] is (0,1,1) and would outrank every
+   :root rung of the ladder below, so it is scoped to the one width it was measured at. */
+@media (min-width:1920px){html[data-concept="agent"]{--chat-left:165px}}
+html[data-concept="agent"] .glow{left:35px}
+html[data-sidebar="off"] .fullscreen{left:8px}
+
+/* ─── Focus mode: the Lens page, whole ─────────────────────────────────── */
+.page-focus{background:#04060b}
+.focus-frame{width:100%;height:100%;border:0;display:block}
+
+/* ═══ overlays ════════════════════════════════════════════════════════════ */
+.orb-layer{position:fixed;inset:0;z-index:50;pointer-events:none}
+.orb-layer>*{pointer-events:auto}
+.layer{position:fixed;inset:0;z-index:60;pointer-events:none}
+.layer>*{pointer-events:auto}
+.console{position:fixed;top:8px;right:8px;bottom:8px;z-index:40}
+
+/* a menu: the same material as a bubble, one item per row */
+.menu{position:fixed;z-index:61;min-width:220px;padding:4px;border-radius:12px;background:var(--mat-12);box-shadow:var(--spectrum),var(--shadow-medium);
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum));
+  animation:menuin .16s var(--ease) both;transform-origin:top left}
+.menu[data-origin="top-right"]{transform-origin:top right}
+.menu[data-origin="bottom-left"]{transform-origin:bottom left}
+.menu[data-origin="bottom-right"]{transform-origin:bottom right}
+@keyframes menuin{from{opacity:0;transform:scale(.96) translateY(-2px)}to{opacity:1;transform:none}}
+.menu-title{padding:8px 12px 4px;font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+.menu-item{display:flex;align-items:center;gap:8px;width:100%;min-height:36px;padding:8px 12px 8px 10px;border-radius:8px;
+  color:var(--control-fg-subtle);font-size:14px;font-weight:500;line-height:20px;white-space:nowrap;text-align:left}
+.menu-item:hover,.menu-item.is-active{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.menu-item .ic{color:var(--fg-tertiary)}
+.menu-item:hover .ic{color:var(--fg-primary)}
+.menu-item span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;padding-bottom:1px}
+.menu-item kbd{font-family:var(--font-mono);font-size:12px;line-height:14px;color:var(--fg-tertiary);padding:1px 5px;border-radius:4px;
+  background:var(--control-bg-transparent-hover)}
+.menu-item .check{width:16px;height:16px;color:var(--fg-primary);visibility:hidden}
+.menu-item[aria-checked="true"] .check{visibility:visible}
+.menu-item small{font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:nowrap}
+.menu-sep{height:1px;margin:4px 8px;background:var(--border-ghost)}
+.menu-item.is-danger{color:var(--negative)}
+
+/* the command palette */
+.palette-scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);animation:fadein .16s ease both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+/* the palette is the one overlay placed by a transform, so it cannot borrow `menuin`
+   (`to{transform:none}` + fill-mode both would wipe the centring the moment it lands) */
+.palette{position:fixed;left:50%;top:160px;transform:translateX(-50%);width:min(640px,calc(100vw - 32px));max-height:calc(100vh - 240px);display:flex;flex-direction:column;
+  border-radius:16px;background:var(--mat-12);box-shadow:var(--modal-2),var(--umbra-lit);
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum));animation:palettein .18s var(--ease) both;transform-origin:top center}
+@keyframes palettein{from{opacity:0;transform:translateX(-50%) scale(.96) translateY(-2px)}to{opacity:1;transform:translateX(-50%)}}
+.palette-head{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-ghost)}
+.palette-head .ic{color:var(--fg-tertiary)}
+.palette-field{flex:1;min-width:0;height:36px;border:0;background:none;outline:0;font-size:16px;line-height:24px}
+.palette-field::placeholder{color:var(--fg-inverse-tertiary)}
+.palette-list{flex:1;min-height:0;overflow-y:auto;padding:4px;scrollbar-width:none}
+.palette-empty{padding:24px;text-align:center;color:var(--fg-tertiary)}
+.palette kbd{margin-left:auto}
+
+/* toasts */
+.toasts{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;align-items:center;z-index:70}
+.toast{display:flex;align-items:center;gap:12px;padding:8px 8px 8px 14px;border-radius:10px;background:var(--mat-12);box-shadow:var(--spectrum),var(--shadow-medium);
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum));font-size:14px;line-height:20px;color:var(--control-fg-subtle);
+  white-space:nowrap;animation:rise .24s var(--ease) both}
+.toast .btn{min-width:0}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* a popover with its own body (files, filters, columns) */
+.pop{position:fixed;z-index:61;width:320px;max-height:70vh;display:flex;flex-direction:column;border-radius:12px;background:var(--mat-12);
+  box-shadow:var(--spectrum),var(--shadow-medium);backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum));
+  animation:menuin .16s var(--ease) both;transform-origin:top right;overflow:hidden}
+.pop-head{display:flex;align-items:center;gap:8px;padding:10px 8px 10px 16px;border-bottom:1px solid var(--border-ghost);font-size:14px;font-weight:500;line-height:20px}
+.pop-head span{flex:1;min-width:0}
+.pop-body{flex:1;min-height:0;overflow-y:auto;padding:8px;scrollbar-width:none}
+.pop-row{display:flex;align-items:center;gap:10px;min-height:36px;padding:6px 8px;border-radius:8px;font-size:14px;line-height:20px;color:var(--control-fg-subtle)}
+.pop-row:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.pop-row .ic{color:var(--fg-tertiary)}
+.pop-row small{margin-left:auto;font-size:12px;color:var(--fg-tertiary);white-space:nowrap}
+.pop-foot{display:flex;justify-content:flex-end;gap:8px;padding:8px;border-top:1px solid var(--border-ghost)}
+.check{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;flex:none;
+  box-shadow:inset 0 0 0 1px var(--border-primary);background:var(--control-bg-transparent-hover);color:transparent}
+.check[aria-checked="true"],.pop-row[aria-checked="true"] .check{background:var(--brand);color:#fff;box-shadow:none}
+
+/* the thinking dots, shared by the thread and the orb */
+.thinking{display:inline-flex;gap:4px;align-items:center;height:20px}
+.thinking i{width:5px;height:5px;border-radius:50%;background:var(--control-fg-subtle);opacity:.4;animation:blink 1.1s var(--ease) infinite}
+.thinking i:nth-child(2){animation-delay:.16s}
+.thinking i:nth-child(3){animation-delay:.32s}
+@keyframes blink{0%,100%{opacity:.25;transform:translateY(0)}45%{opacity:.9;transform:translateY(-2px)}}
+
+/* keyboard hint on a control's title */
+.kbd{font-family:var(--font-mono);font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+
+/* read by assistive tech only: the page's one live region */
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+
+/* ═══ the room it is given ════════════════════════════════════════════════
+   The design is drawn at 1920×1080. Narrower, things give in the order they can be spared:
+   the chat column first (it is fluid, and its blocks reflow — see chat.css), then the widgets
+   column narrows, then it steps off the page and becomes a drawer, then the sidebar does.
+   app.js folds a drawer away when a window is first seen that narrow, and unfolds it when
+   the window grows back. */
+@media (max-width:1919px){
+  :root{--chat-left:64px}
+  .thread,.composer{width:auto;right:calc(var(--widgets-w) + var(--widgets-inset) + var(--chat-gap))}
+  html[data-widgets="off"] .thread,html[data-widgets="off"] .composer{left:var(--chat-left);right:var(--chat-left);width:auto}
+}
+/* each rung hands the chat the room the widgets column gives up. Left alone the column would
+   JUMP wider at the rung (608 -> 685 at 1599, 526 -> 611 at 1439) after shrinking all the way
+   down to it, so each rung pins the cap to the width the rung above it ended on. */
+@media (max-width:1599px){:root{--widgets-w:400px;--chat-left:48px;--reading-max:608px}}
+@media (max-width:1439px){:root{--sidebar-w:300px;--widgets-w:380px;--chat-left:32px;--reading-max:526px}}
+/* under 1320 a widgets column would leave the chat less than 480 wide: it stands off the page
+   and slides in over the chat when asked for — the header's Cards button is the ask */
+@media (max-width:1319px){
+  /* here the widgets column really does leave the page, so the cap comes off with it */
+  :root{--reading-max:var(--chat-w)}
+  .chat-header{right:0}
+  .thread,.composer,html[data-widgets="off"] .thread,html[data-widgets="off"] .composer{left:var(--chat-left);right:var(--chat-left);width:auto}
+  /* it stops above the composer — 24 of inset + 48 of composer + 8 clear — instead of running
+     to the panel floor and burying the model picker and the mic */
+  .widgets{position:absolute;right:8px;top:60px;bottom:80px;width:min(400px,calc(100% - 16px));padding:8px;border-radius:16px;
+    background:var(--mat-05);box-shadow:var(--umbra),-24px 0 48px rgba(0,0,0,.35);
+    backdrop-filter:blur(var(--blur-l));-webkit-backdrop-filter:blur(var(--blur-l));z-index:7;
+    animation:drawerin .22s var(--ease) both}
+}
+@keyframes drawerin{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+/* under 1000 the sidebar is a drawer too: the rail and the page, and the projects slide in over them */
+@media (max-width:999px){
+  :root{--chat-left:24px}
+  .sidebar{position:absolute;left:0;top:0;bottom:0;z-index:8;background:var(--mat-05);
+    box-shadow:24px 0 48px rgba(0,0,0,.35);backdrop-filter:blur(var(--blur-l));-webkit-backdrop-filter:blur(var(--blur-l));
+    animation:sidebarin .22s var(--ease) both}
+  .model-btn span{display:none}
+  .model-btn{min-width:36px;padding:8px;margin-right:-4px}
+  .welcome-grid{grid-template-columns:1fr}
+}
+@keyframes sidebarin{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+@media (max-width:699px){
+  :root{--chat-left:12px}
+  .app{padding:4px;gap:4px}
+  .composer{bottom:12px}
+  .thread{bottom:60px}
+  .widgets{bottom:68px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}

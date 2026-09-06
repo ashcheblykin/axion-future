@@ -1,0 +1,211 @@
+/* =============================================================================
+   chat.css — the thread and everything inside it, the composer's insides.
+   The boxes (#thread at 128/768 under the header, #composer at bottom 24) are
+   the shell's (app.css); this sheet styles what they hold. Numbers are the
+   Home frame's (docs/SPEC.md §2 + §4, Figma 5405:87767) at 1920×1080.
+   ============================================================================= */
+
+/* ─── the thread ────────────────────────────────────────────────────────── */
+.thread{display:flex;flex-direction:column;align-items:stretch}
+.msg{flex:none;display:flex;flex-direction:column;align-items:flex-start;width:100%;animation:msgin .28s var(--ease) both}
+.msg+.msg{margin-top:32px}
+.msg[data-gap="24"]{margin-top:24px}
+@keyframes msgin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* the user's bubble: right aligned, the bubble material, spectrum + blur 256 */
+.msg-user{align-items:flex-end}
+.bubble{max-width:min(461px,100%);padding:8px 12px;border-radius:16px;background:var(--mat-10);box-shadow:var(--spectrum);
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum));
+  font-size:16px;line-height:24px;color:var(--control-fg-subtle);white-space:pre-wrap;overflow-wrap:anywhere}
+.bubble .ic{display:inline-block;vertical-align:-3px;margin-right:6px;color:var(--fg-tertiary)}
+
+/* the agent: text, then the blocks, then the actions row */
+.msg-agent{position:relative}
+.msg-text{max-width:753px;font-size:16px;line-height:24px;color:var(--control-fg-subtle);white-space:pre-wrap;overflow-wrap:anywhere}
+.msg-text.is-streaming::after{content:"";display:inline-block;width:2px;height:16px;margin-left:3px;vertical-align:-2px;
+  background:var(--fg-primary);animation:caret 1s steps(2,jump-none) infinite}
+@keyframes caret{from{opacity:1}to{opacity:0}}
+/* the blocks reflow on the column's width (the container queries at the foot of this sheet) */
+.msg-blocks{display:flex;flex-direction:column;align-items:flex-start;gap:24px;width:100%;container-type:inline-size}
+.msg-text+.msg-blocks{margin-top:24px}
+.msg-blocks:empty{display:none}
+.blk{flex:none;width:100%;animation:blkin .28s var(--ease) both}
+@keyframes blkin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* the actions row: 28 tall — four 28 buttons at gap 2, the time at x130 */
+.msg-acts{display:flex;align-items:center;height:28px;margin-top:8px;transition:opacity .2s var(--ease)}
+.acts-group{display:flex;align-items:center;gap:2px}
+.acts-ago{position:relative;top:-1px;margin-left:12px;font-size:12px;line-height:14px;color:var(--fg-secondary);white-space:nowrap}
+.msg-acts .btn-ghost[aria-pressed="true"]{color:var(--fg-primary)}
+.msg-agent:last-child .msg-acts{opacity:.2}
+.msg-agent:last-child:hover .msg-acts,.msg-agent:last-child:focus-within .msg-acts,.msg-agent.is-fresh .msg-acts{opacity:1}
+/* the three follow-ups offered under a fresh reply */
+.msg-follow{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;animation:msgin .24s var(--ease) both}
+.chip-follow{height:28px;padding:5px 10px;border-radius:8px;font-size:12px;line-height:16px;font-weight:500;cursor:pointer;
+  transition:background .14s var(--ease),color .14s var(--ease)}
+.chip-follow:hover{background:var(--control-bg-transparent-pressed);color:var(--fg-primary)}
+.chip-follow .ic{color:var(--fg-tertiary)}
+
+/* the thinking row, before the words come */
+.msg-think{display:flex;align-items:center;gap:8px;height:24px;color:var(--fg-tertiary);font-size:12px;line-height:14px}
+
+/* ─── the incident block: card + photo + meta, a 749×290 group ──────────── */
+/* a grid rather than absolute offsets, so the same three land on the frame's pixels at 768
+   (0 · 384 · 573) and reflow when the column is narrower (the container queries below) */
+.blk-incident{position:relative;display:grid;grid-template-columns:minmax(0,376px) 169.576px 176px;column-gap:8px;row-gap:12px;
+  align-items:start;width:100%;max-width:749px}
+.inc-card{position:relative;width:100%;min-height:290px;display:flex;flex-direction:column;gap:12px;padding:16px 16px 20px;
+  border-radius:16px;overflow:hidden;background:var(--mat-12);box-shadow:var(--umbra);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s))}
+/* the label: the frame sets the text in a 10px box (Figma's control text) with 12 under it, and a .5px rule */
+.card-label{position:relative;z-index:1;flex:none;font-size:14px;font-weight:500;line-height:10px;padding-bottom:12px;color:var(--fg-primary);
+  white-space:nowrap;box-shadow:inset 0 -.5px 0 var(--border-primary)}
+.card-rows{position:relative;z-index:1;display:flex;flex-direction:column;gap:20px}
+.inc-row{display:flex;align-items:flex-start;gap:8px;width:100%}
+.inc-t{flex:none;width:64px;font-size:12px;font-weight:500;line-height:15px;color:var(--fg-primary);opacity:.4;white-space:nowrap}
+.inc-row.is-now .inc-t{opacity:1}
+.inc-x{flex:1;min-width:0;font-size:14px;line-height:17px;color:var(--fg-primary);white-space:pre-line}
+.inc-stack{display:flex;flex-direction:column;gap:4px}
+.inc-flag{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:500;line-height:17px;color:var(--flag);white-space:nowrap}
+.inc-flag .dot{--dot:var(--flag)}
+/* the red bloom: the 395 ellipse sits at (-9,282) of the card, its top edge on the
+   card's bottom band; the export is 651 square because it carries its own 64px
+   blur margin, so it goes in at 1:1, centred on the ellipse, clipped by the card */
+.inc-glow{position:absolute;left:-137px;top:154px;width:651px;height:651px;pointer-events:none;z-index:0;max-width:none}
+.inc-photo{position:relative;display:block;width:169.576px;height:290px;border-radius:16px;overflow:hidden;background:var(--control-bg-transparent-hover)}
+.inc-photo img{position:absolute;left:-7.022px;top:0;width:183.999px;height:314.528px;max-width:none}
+.inc-meta{width:176px;margin:14px 0 0 11.424px;font-size:12px;line-height:15px;color:var(--fg-primary)}
+.inc-meta a{color:var(--info)}
+.inc-meta .nb{white-space:nowrap}
+
+/* ─── the timeline block (Timeline.mount) and its stand-in ──────────────── */
+.blk-timeline{width:100%;max-width:768px}
+.tlp{width:100%;max-width:768px;height:135px;display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:12px;background:var(--mat-12);box-shadow:var(--spectrum);
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum))}
+.tlp-head{display:flex;align-items:center;gap:8px;height:28px;padding-left:8px}
+.tlp-head>span{flex:1;font-size:14px;font-weight:500;line-height:20px}
+.tlp-plot{position:relative;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 8px 8px;border-radius:4px 4px 10px 10px;background:var(--mat-05)}
+.tlp-line{height:57px;border-bottom:1px solid var(--border-ghost)}
+.tlp-months{display:flex;justify-content:space-between;padding-top:8px;font-size:12px;line-height:14px;color:var(--control-fg-subtle)}
+
+/* ─── stat tiles ─────────────────────────────────────────────────────────── */
+.blk-kpis{display:flex;gap:8px}
+.st{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;background:var(--mat-12);box-shadow:var(--umbra)}
+.st-label{font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-value{display:flex;align-items:baseline;gap:4px;font-size:24px;font-weight:500;line-height:28px;font-variant-numeric:tabular-nums;color:var(--fg-primary)}
+.st-value small{font-size:12px;line-height:14px;font-weight:400;color:var(--fg-tertiary)}
+.st-delta{font-size:12px;line-height:14px;font-weight:500;color:var(--kpi,var(--info))}
+.st-bar{height:4px;border-radius:2px;background:var(--control-bg-transparent-pressed);overflow:hidden}
+.st-bar i{display:block;height:100%;width:var(--pct,0%);border-radius:2px;background:var(--kpi,var(--info));transform-origin:left;animation:grow .6s var(--ease) both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:none}}
+
+/* ─── a bar chart in the thread ──────────────────────────────────────────── */
+.blk-chart{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:12px;background:var(--mat-12);box-shadow:var(--umbra)}
+.bc-head{display:flex;align-items:baseline;gap:8px}
+.bc-title{flex:1;min-width:0;font-size:14px;font-weight:500;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bc-unit{font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+.bc-svg{display:block;width:100%;height:auto;overflow:visible;font-family:var(--font)}
+.bc-base{stroke:var(--border-primary);stroke-width:1}
+.bc-target{stroke:var(--fc-act);stroke-width:.8;stroke-dasharray:2 3}
+.bc-target-label{fill:var(--fc-act);font-size:10px}
+.bc-bar{transform-box:fill-box;transform-origin:bottom;animation:grow-y .5s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms);transition:filter var(--t-state)}
+.bc-bar:hover{filter:brightness(1.15)}
+@keyframes grow-y{from{transform:scaleY(0)}to{transform:none}}
+.bc-val{fill:var(--fg-primary);font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.bc-label{fill:var(--fg-tertiary);font-size:12px}
+
+/* ─── compact signal rows ────────────────────────────────────────────────── */
+.blk-signals{display:flex;flex-direction:column;gap:2px;padding:4px;border-radius:12px;background:var(--mat-12);box-shadow:var(--umbra)}
+.sl-row{display:flex;align-items:center;gap:10px;width:100%;padding:6px 8px 6px 6px;border-radius:8px;text-align:left;
+  transition:background var(--t-state)}
+.sl-row:hover{background:var(--control-bg-transparent-hover)}
+.sl-thumb{--sig-thumb:40px}
+.sl-thumb .dot{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px}
+.sl-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+/* one line, not two: the row is 40 tall */
+.sl-title{-webkit-line-clamp:1;max-height:none;white-space:nowrap;text-overflow:ellipsis}
+.sl-meta .dot{margin-top:1px}
+.sl-row .badge{flex:none}
+.sl-row>.ic{flex:none;color:var(--fg-tertiary)}
+
+/* ─── the action package: three measures with Commit / Reject ────────────── */
+.blk-actions{display:flex;flex-direction:column;gap:8px}
+.pk-head{display:flex;flex-direction:column;gap:2px;padding-bottom:4px}
+.pk-title{font-size:14px;font-weight:500;line-height:20px;color:var(--fg-primary)}
+.pk-intro{font-size:12px;line-height:15px;color:var(--fg-tertiary)}
+.pk-card{display:flex;flex-direction:column;gap:8px;padding:12px 16px;border-radius:12px;background:var(--mat-12);box-shadow:var(--umbra);
+  transition:opacity .2s var(--ease),box-shadow .2s var(--ease)}
+.pk-text{font-size:14px;line-height:20px;color:var(--fg-primary)}
+.pk-chips{display:flex;flex-wrap:wrap;gap:4px}
+.pk-chips .chip b{font-weight:500;color:var(--fg-primary)}
+.pk-foot{display:flex;align-items:center;gap:8px}
+.pk-effect{flex:1;min-width:0;font-size:12px;line-height:15px;color:var(--fg-tertiary)}
+.pk-card[data-done="commit"]{box-shadow:var(--umbra),inset 0 0 0 1px rgba(59,199,125,.35)}
+.pk-card[data-done="commit"] .pk-effect{color:var(--positive)}
+.pk-card[data-done="reject"]{opacity:.55}
+.pk-card .btn .ic{width:12px;height:12px}
+
+/* ─── the welcome state (#/new) ──────────────────────────────────────────── */
+.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;min-height:100%;padding-bottom:48px;
+  animation:msgin .28s var(--ease) both}
+.welcome-text{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.welcome-title{font-size:24px;font-weight:500;line-height:32px;color:var(--fg-primary)}
+.welcome-hint{font-size:14px;line-height:20px;color:var(--fg-tertiary)}
+.welcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:600px;max-width:100%}
+.sugg{display:flex;align-items:center;gap:10px;min-height:52px;padding:16px;border-radius:12px;background:var(--mat-05);box-shadow:var(--umbra);
+  font-size:14px;font-weight:500;line-height:20px;color:var(--control-fg-subtle);text-align:left;
+  transition:background var(--t-state),color var(--t-state),transform var(--t-state)}
+.sugg:hover{background:var(--mat-12);color:var(--fg-primary);transform:translateY(-1px)}
+.sugg .ic{flex:none;color:var(--fg-tertiary)}
+.sugg:hover .ic{color:var(--fg-primary)}
+.sugg span{padding-bottom:1px}
+
+/* ─── the composer's insides ─────────────────────────────────────────────── */
+.composer .input{height:auto;min-height:48px;align-items:flex-end}
+.composer .field{height:auto;min-height:48px;padding:12px 8px}
+.composer .ask-field{display:block;height:24px}
+.composer .model-btn{align-self:flex-end;margin-bottom:6px}
+.composer .btn48[aria-pressed="true"]{color:var(--fg-primary)}
+/* Plus options: the frame's 334×44 bar over the input — chips 36 tall */
+.plus-options{position:absolute;left:8px;bottom:calc(100% + 8px);z-index:2;display:flex;align-items:center;gap:2px;min-width:334px;width:max-content;max-width:100%;
+  height:44px;padding:4px;border-radius:12px;background:var(--mat-12);box-shadow:var(--spectrum),var(--shadow-medium);
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum));
+  animation:plusin .16s var(--ease) both;transform-origin:bottom left}
+@keyframes plusin{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:none}}
+.plus-opt{display:inline-flex;align-items:center;gap:6px;height:36px;padding:8px 12px 8px 10px;border-radius:8px;
+  color:var(--control-fg-subtle);font-size:14px;font-weight:500;line-height:20px;white-space:nowrap;transition:background var(--t-state),color var(--t-state)}
+.plus-opt:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.plus-opt .ic{color:var(--fg-tertiary)}
+.plus-opt:hover .ic{color:var(--fg-primary)}
+.plus-opt span{padding-bottom:1px}
+.plus-opt kbd{font-family:var(--font-mono);font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+
+/* ─── the popovers this module opens (files, rename, new project) ────────── */
+.file-row{width:100%}
+.file-row .file-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pop-count{flex:1;font-size:12px;line-height:14px;color:var(--fg-tertiary);align-self:center;padding-left:8px}
+.pop-field{display:flex;flex-direction:column;gap:6px;padding:4px}
+.pop-input{height:36px;padding:0 10px;border:0;border-radius:8px;background:var(--mat-b05);box-shadow:inset 0 0 0 1px var(--border-ghost);
+  color:var(--fg-primary);font-size:14px;line-height:20px;outline:0;transition:box-shadow var(--t-state)}
+.pop-input:focus{box-shadow:inset 0 0 0 1px rgba(125,123,255,.6)}
+.pop-input::placeholder{color:var(--fg-inverse-tertiary)}
+.pop-hint{font-size:12px;line-height:14px;color:var(--fg-tertiary);padding:0 2px}
+.pop-foot .btn{min-width:64px;height:28px}
+.pop-foot .btn .ic{width:14px;height:14px}
+
+/* ─── the room it is given ───────────────────────────────────────────────── */
+/* the incident group reflows on its own width: under 749 the meta line drops under the card and
+   the photo; under 520 the photo drops under the card and goes wide */
+@container (max-width:748px){
+  .blk-incident{grid-template-columns:minmax(0,1fr) 169.576px}
+  .inc-meta{grid-column:1 / -1;width:100%;max-width:560px;margin:0}
+}
+@container (max-width:519px){
+  .blk-incident{grid-template-columns:minmax(0,1fr)}
+  .inc-photo{width:100%;height:200px}
+  .inc-photo img{left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:50% 35%}
+}
+.welcome-grid{width:min(600px,100%)}
+@media (prefers-reduced-motion:reduce){
+  .msg-text.is-streaming::after{animation:none}
+}

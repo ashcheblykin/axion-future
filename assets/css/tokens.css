@@ -1,0 +1,98 @@
+/* =============================================================================
+   tokens.css — Axion Gen · Future vision.
+   The design system's variables, verbatim from the Figma file (dark mode), and the
+   three effect styles the screens are built from. Every other stylesheet reads
+   these; none restates them.  Figma: XDOceRokvyikE1cuk6HO9S · section 5414:188133
+   ============================================================================= */
+
+@font-face{font-family:"ABC Diatype";font-weight:400;font-style:normal;font-display:swap;
+  src:local("ABC Diatype Trial Regular"),local("ABCDiatypeTrial-Regular"),local("ABC Diatype Regular"),local("ABCDiatype-Regular")}
+@font-face{font-family:"ABC Diatype";font-weight:500;font-style:normal;font-display:swap;
+  src:local("ABC Diatype Trial Medium"),local("ABCDiatypeTrial-Medium"),local("ABC Diatype Medium"),local("ABCDiatype-Medium")}
+@font-face{font-family:"ABC Diatype";font-weight:700;font-style:normal;font-display:swap;
+  src:local("ABC Diatype Trial Bold"),local("ABCDiatypeTrial-Bold"),local("ABC Diatype Bold"),local("ABCDiatype-Bold")}
+
+:root{
+  /* ---- colour ------------------------------------------------------------ */
+  --bg:#262626;                                  /* the frame                    */
+  --surface:rgba(0,0,0,.8);                      /* surface · #000000cc          */
+  --on-surface-primary:rgba(255,255,255,.05);
+  --fg-primary:#fdfdfd;
+  --fg-secondary:#b5b5b5;                        /* base/fg/secondary (dark)     */
+  --fg-tertiary:#9e9e9e;                         /* base/fg/tertiary             */
+  --fg-inverse-tertiary:#797979;
+  --control-fg-subtle:#dcdcdc;
+  --control-fg-subtle-active:#f9f9f9;
+  --control-fg-subtle-ghost:#b5b5b5;
+  --control-fg-subtle-inverse:#262626;
+  --control-bg-secondary-inverse:#f4f4f4;
+  --control-bg-tretiary:#3c3c3c;
+  --control-bg-transparent-hover:rgba(253,253,253,.05);
+  --control-bg-transparent-pressed:rgba(253,253,253,.1);
+  --border-primary:rgba(253,253,253,.1);
+  --border-ghost:rgba(253,253,253,.05);
+  --brand:#7d7bff;
+  --info:#4cb4ff;
+  --positive:#3bc77d;
+  --warning:#ffcd29;
+  --negative:#ff7871;
+  --flag:#ff5050;
+  --project-green:#10b981;
+  --fc-base:#e5ab3c;                             /* forecast · no action         */
+  --fc-act:#00d39b;                              /* forecast · with the package  */
+  --dot-ghost:#797979;
+  --fg-meta:rgba(253,253,253,.4);                /* a signal card's meta line          */
+  --surface-flat:#141414;                        /* --mat-05 on the frame, flattened:  */
+                                                 /* the opaque stand-in a sticky sheet */
+                                                 /* or a presence ring needs           */
+  --alert-bg-positive:#024626;                   /* the four badge grounds             */
+  --alert-bg-info:#093077;
+  --alert-bg-warning:#985b0b;
+  --alert-bg-negative:rgba(255,120,113,.16);
+
+  /* ---- Axion material: one tint riding on one surface ----------------------- */
+  --mat-05:linear-gradient(0deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.05) 100%),var(--surface);   /* Primary    */
+  --mat-10:linear-gradient(0deg,rgba(255,255,255,.1) 0%,rgba(255,255,255,.1) 100%),var(--surface);     /* the bubble */
+  --mat-12:linear-gradient(0deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.12) 100%),var(--surface);   /* Secondary  */
+  --mat-b05:linear-gradient(0deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.05) 100%),var(--surface);              /* On Primary */
+  --mat-over:linear-gradient(0deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.12) 100%),rgba(0,0,0,.94);
+
+  /* ---- effects ------------------------------------------------------------- */
+  --umbra-lit:0 .5px .75px 0 rgba(255,255,255,.25) inset,0 -.5px .75px 0 rgba(255,255,255,.25) inset;
+  --umbra:var(--umbra-lit),0 0 0 .5px var(--surface);
+  --spectrum:0 0 .5px .5px var(--border-primary);
+  --shadow-medium:0 10px 32px 0 rgba(0,0,0,.16);
+  --modal-lit:0 .5px 1px 0 rgba(255,255,255,.22) inset;
+  --modal:0 0 0 .5px #dbdbdb,0 18px 48px rgba(0,0,0,.25),var(--modal-lit);
+  --modal-2:0 0 1px 0 rgba(0,0,0,.8),0 18px 54px 0 rgba(0,0,0,.3);
+  --orb-glow:0 4px 128px 27px rgba(76,180,255,.25);
+
+  --blur-modal:8px;        /* Modal/Secondary · radius 16  */
+  --blur-window:18px;      /* Blur/Window     · radius 36  */
+  --blur-s:32px;           /* blur/s          · radius 64  */
+  --blur-l:64px;           /* blur/l          · radius 128 */
+  --blur-xl:128px;         /* the panel                    */
+  --blur-spectrum:256px;   /* Shadow/Axion spectrum · 512  */
+
+  /* ---- the shell's measurements ---------------------------------------------- */
+  --gap:8px;
+  --rail-w:60px;
+  --sidebar-w:350px;
+  --header-h:52px;
+  --chat-w:768px;
+  --chat-left:128px;       /* from the sidebar's edge to the chat column */
+  --widgets-w:462px;
+  --widgets-gap:10px;      /* between the header's end and the widgets column */
+  --chat-gap:24px;         /* the least room the chat column keeps to the widgets column */
+  --widgets-inset:8px;     /* the column stands 8 from the panel's right edge */
+  --measure:768px;         /* a reading column: the chat's width, and every page list's */
+  --measure-wide:1120px;   /* a row of data wider than prose can be read at             */
+
+  /* ---- type -------------------------------------------------------------------- */
+  --font:"ABC Diatype","ABC Diatype Trial",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"IBM Plex Mono",monospace;
+
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --ease-pop:cubic-bezier(.34,1.4,.64,1);
+  --t-state:.16s var(--ease);   /* a control answering the pointer: hover, press, check */
+}

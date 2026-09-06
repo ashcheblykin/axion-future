@@ -1,0 +1,195 @@
+/* =============================================================================
+   pages.css — the simple pages: Scheduled · Signals · Dashboards · People ·
+   Settings. All of them render into #pageSimple (window.Pages, pages.js) under
+   the same 52px .gen-header the Library wears; the body below it scrolls.
+   Materials, radii and the type scale are the shell's (docs/SPEC.md §1); the
+   atoms (.btn-ghost .btn-light .btn .seg .chip .badge .dot .avatar) come from
+   app.css untouched — everything here is namespaced pg- / run- / sg- / db- /
+   pp- / st-.
+   ============================================================================= */
+
+/* ─── the frame every page shares ──────────────────────────────────────── */
+.page-simple{display:flex;flex-direction:column}
+.pg-header{flex:none;gap:8px;box-shadow:inset 0 -1px 0 var(--border-primary);
+  backdrop-filter:blur(var(--blur-window));-webkit-backdrop-filter:blur(var(--blur-window))}
+.pg-title{flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:36px}
+.pg-ic{display:grid;place-items:center;width:36px;height:36px;flex:none;color:var(--control-fg-subtle)}
+.pg-title h1{font-size:16px;font-weight:500;line-height:24px;padding-bottom:1px;color:var(--fg-primary);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg-actions{display:flex;align-items:center;gap:8px;flex:none}
+.pg-actions .btn-light .ic{margin-left:-2px}
+/* the header's leftmost glyph sits 16 from the panel edge (8 of header padding, 8 of the
+   button's own); the body's content starts on that line, not 8 further in */
+.pg-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:16px 16px 24px;
+  scrollbar-width:none;overscroll-behavior:contain}
+.pg-body::-webkit-scrollbar{width:0}
+/* the line above a list: what is on it, in numbers */
+.pg-sum{display:flex;align-items:center;gap:8px;min-height:20px;margin-bottom:8px;
+  font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+.pg-sum b{font-weight:500;color:var(--control-fg-subtle)}
+.pg-sum i{width:3px;height:3px;border-radius:50%;background:var(--fg-inverse-tertiary)}
+.pg-none{padding:24px 0;font-size:14px;line-height:20px;color:var(--fg-tertiary)}
+
+/* a search field in a header: On Primary material, a ghost ring. 36 tall and radius 8, the
+   height and radius every other control in a .gen-header wears (.btn36 .btn-light .seg-icons) */
+.pg-search{display:flex;align-items:center;gap:6px;width:220px;height:36px;padding:0 8px;border-radius:8px;
+  background:var(--mat-b05);box-shadow:inset 0 0 0 1px var(--border-ghost);color:var(--fg-tertiary);
+  transition:box-shadow var(--t-state)}
+.pg-search:focus-within{box-shadow:inset 0 0 0 1px rgba(125,123,255,.6)}
+.pg-search input{flex:1;min-width:0;height:100%;border:0;background:none;outline:0;padding:0 0 1px;
+  font-size:14px;line-height:20px;color:var(--fg-primary)}
+.pg-search input::placeholder{color:var(--fg-inverse-tertiary)}
+.pg-search input::-webkit-search-cancel-button{display:none}
+.pg-search .btn28{margin-right:-4px}
+/* a segmented track in a header stands as tall as the buttons beside it; inside a widget it
+   keeps its own 28 (the timeline's and the MiniMap's) */
+.pg-header .seg{height:36px;padding:4px}
+
+/* fields inside a popover form */
+.pg-form{display:flex;flex-direction:column;gap:10px;padding:4px}
+.pg-fld{display:flex;flex-direction:column;gap:4px}
+.pg-fld>span{font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+.pg-fld-wrap{position:relative;display:flex}
+.pg-field{width:100%;height:36px;padding:0 10px 1px;border:0;border-radius:8px;outline:0;
+  background:var(--mat-b05);box-shadow:inset 0 0 0 1px var(--border-ghost);color:var(--fg-primary);
+  font-size:14px;line-height:20px;transition:box-shadow var(--t-state)}
+.pg-field:focus{box-shadow:inset 0 0 0 1px rgba(125,123,255,.6)}
+.pg-field[aria-invalid="true"]{box-shadow:inset 0 0 0 1px rgba(255,120,113,.7)}
+.pg-field::placeholder{color:var(--fg-inverse-tertiary)}
+select.pg-field{appearance:none;-webkit-appearance:none;padding-right:32px;color-scheme:dark;cursor:pointer}
+select.pg-field option{background:#1c1c1c;color:var(--fg-primary)}
+.pg-fld-wrap .ic{position:absolute;right:10px;top:10px;color:var(--fg-tertiary);pointer-events:none}
+.pg-err{font-size:12px;line-height:14px;color:var(--negative);min-height:0}
+.pg-err:empty{display:none}
+
+/* ─── Scheduled · run cards ─────────────────────────────────────────────── */
+.pg-list{display:flex;flex-direction:column;gap:8px;max-width:var(--measure-wide)}
+.run{display:flex;align-items:center;gap:16px;padding:12px;border-radius:12px;
+  background:var(--mat-05);box-shadow:inset 0 0 0 1px var(--border-ghost);
+  transition:background var(--t-state),opacity .2s var(--ease),transform .2s var(--ease)}
+.run:hover{background:var(--mat-12)}
+.run.is-out{opacity:0;transform:translateX(8px)}
+.run.is-in{animation:pg-in .24s var(--ease) both}
+@keyframes pg-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.run-status{display:grid;place-items:center;width:20px;height:20px;flex:none}
+.run-dot{position:relative;width:8px;height:8px;border-radius:50%;background:var(--dot)}
+.run[data-status="running"] .run-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--dot);
+  animation:pg-pulse 1.6s var(--ease) infinite}
+@keyframes pg-pulse{from{transform:scale(1);opacity:.55}to{transform:scale(2.8);opacity:0}}
+.run-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.run-name{font-size:14px;font-weight:500;line-height:20px;color:var(--fg-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.run-cad{font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.run[data-status="paused"] .run-name{color:var(--control-fg-subtle)}
+.run-cell{width:128px;flex:none;display:flex;flex-direction:column;gap:2px}
+.run-cell small{font-size:10px;line-height:14px;color:var(--fg-inverse-tertiary)}
+.run-cell code{font-family:var(--font-mono);font-size:12px;line-height:14px;color:var(--control-fg-subtle);
+  font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.run-chips{display:flex;align-items:center;gap:4px;width:248px;flex:none}
+.run-chips .chip{align-self:center;white-space:nowrap}
+.run-menu{flex:none;margin-right:-4px}
+
+/* ─── Signals · the shelf as a grid ─────────────────────────────────────── */
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px}
+.sg{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:12px;cursor:pointer;text-align:left;
+  background:var(--mat-05);box-shadow:inset 0 0 0 1px var(--border-ghost);
+  transition:background var(--t-state),transform .18s var(--ease),box-shadow .18s var(--ease)}
+.sg:hover{background:var(--mat-12);transform:translateY(-1px)}
+.sg:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--brand)}
+.sg-top{display:flex;align-items:flex-start;gap:8px}
+.sg-thumb--none{display:grid;place-items:center;color:var(--fg-inverse-tertiary)}
+.sg-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding-top:6px}
+.sg-when{flex:none;font-weight:400;padding-left:2px}
+.sg-foot{display:flex;align-items:center;gap:8px;font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:nowrap}
+.sg-foot>span{overflow:hidden;text-overflow:ellipsis}
+.sg-foot .badge{flex:none}
+.sg-foot .btn{margin-left:auto;flex:none}
+
+/* ─── Dashboards · tiles ────────────────────────────────────────────────── */
+.pg-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px}
+.db{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:16px;text-align:left;cursor:pointer;
+  background:var(--mat-05);box-shadow:inset 0 0 0 1px var(--border-ghost);
+  transition:background var(--t-state),transform .18s var(--ease),box-shadow .18s var(--ease)}
+.db:hover{background:var(--mat-12);transform:translateY(-2px);box-shadow:inset 0 0 0 1px var(--border-primary),var(--shadow-medium)}
+.db-head{display:flex;align-items:center;gap:12px}
+.db-ic{display:grid;place-items:center;width:40px;height:40px;flex:none;border-radius:10px;background:var(--mat-12);
+  box-shadow:var(--umbra-lit);color:var(--fg-primary)}
+.db-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.db-name{font-size:16px;font-weight:500;line-height:20px;color:var(--fg-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-note{font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-open{flex:none;color:var(--fg-tertiary);opacity:0;transform:translateX(-2px);transition:opacity var(--t-state),transform var(--t-state)}
+.db:hover .db-open,.db:focus-visible .db-open{opacity:1;transform:none}
+.db-spark{display:block;width:100%;height:40px;overflow:visible}
+.db-foot{display:flex;align-items:center;justify-content:space-between;font-size:12px;line-height:14px;color:var(--fg-inverse-tertiary)}
+.db-foot code{font-family:var(--font-mono);font-size:12px}
+
+/* ─── People · a list ───────────────────────────────────────────────────── */
+.pp-list{display:flex;flex-direction:column;max-width:var(--measure);border-radius:12px;overflow:hidden;
+  background:var(--mat-05);box-shadow:inset 0 0 0 1px var(--border-ghost)}
+.pp{display:flex;align-items:center;gap:12px;padding:12px;transition:background var(--t-state)}
+.pp+.pp{box-shadow:inset 0 1px 0 var(--border-ghost)}
+.pp:hover{background:var(--control-bg-transparent-hover)}
+.pp.is-in{animation:pg-in .24s var(--ease) both}
+.pp-av{position:relative;flex:none;display:block}
+.pp-on{position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;border-radius:50%;background:var(--positive);
+  box-shadow:0 0 0 2px var(--surface-flat)}
+.pp[data-on="false"] .pp-on{background:var(--dot-ghost)}
+.pp-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pp-name{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;line-height:20px;color:var(--fg-primary);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-name .chip{align-self:center;font-size:10px;line-height:12px;padding:1px 5px}
+.pp-role{font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-state{flex:none;width:56px;text-align:right;font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+.pp[data-on="true"] .pp-state{color:var(--positive)}
+.pp .btn{flex:none}
+
+/* ─── Settings · groups of rows ─────────────────────────────────────────── */
+.st-col{display:flex;flex-direction:column;gap:24px;max-width:var(--measure)}
+.st-sec{display:flex;flex-direction:column;gap:8px}
+.st-sec h2{font-size:14px;font-weight:500;line-height:20px;color:var(--fg-primary);padding:0 4px}
+.st-sec p{font-size:12px;line-height:14px;color:var(--fg-tertiary);padding:0 4px;margin-top:-4px}
+.set-group{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;
+  background:var(--mat-05);box-shadow:inset 0 0 0 1px var(--border-ghost)}
+.set-row{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:12px;text-align:left;
+  font-size:14px;line-height:20px;color:var(--control-fg-subtle);transition:background var(--t-state),color var(--t-state)}
+.set-row+.set-row{box-shadow:inset 0 1px 0 var(--border-ghost)}
+button.set-row:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+button.set-row:focus-visible{outline-offset:-2px}
+.set-row>.ic{color:var(--fg-tertiary)}
+.set-label{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.set-label>span{padding-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-label small{font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:normal}
+.set-value{margin-left:auto;flex:none;max-width:60%;text-align:right;color:var(--fg-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-value.is-mono{font-family:var(--font-mono);font-size:12px;color:var(--control-fg-subtle)}
+.set-row.is-danger:hover{color:var(--negative)}
+/* the switch itself is app.css's .switch atom */
+/* the radio: a check that is only there when chosen */
+.set-check{width:16px;height:16px;flex:none;color:var(--fg-primary);visibility:hidden}
+.set-row[role="radio"][aria-checked="true"] .set-check{visibility:visible}
+.set-row[role="radio"][aria-checked="true"]{color:var(--fg-primary)}
+
+/* on the shell's ladder (app.css): at 1440 the sidebar narrows, at 1000 it steps off the page.
+   A run row gives up its fixed columns in that order, so the run's NAME is the last thing to
+   lose room rather than the first. */
+@media (max-width:1439px){
+  .run-chips{width:auto}
+  .run-cell{width:112px}
+}
+@media (max-width:1319px){
+  .run-chips .chip:nth-child(n+2){display:none}
+}
+@media (max-width:999px){
+  .run{gap:12px}
+  .run-cell:nth-of-type(2),.run-chips{display:none}
+  /* a 220 field cannot stand beside the title in a panel this narrow: it keeps its 36 and
+     gives up width instead of running off the panel's right edge */
+  .pg-actions{flex:1 1 auto;min-width:0;justify-content:flex-end}
+  .pg-search{width:auto;flex:1 1 120px;min-width:88px;max-width:220px}
+}
+@media (max-width:699px){
+  .run-cell{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .run[data-status="running"] .run-dot::after{animation:none;opacity:.35;transform:scale(1.8)}
+  .run.is-in,.pp.is-in{animation:none}
+  .sg:hover,.db:hover{transform:none}
+}

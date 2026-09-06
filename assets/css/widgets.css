@@ -1,0 +1,193 @@
+/* =============================================================================
+   widgets.css — the widgets the agent opens beside the thread, and one of them
+   expanded to cover the chat (docs/SPEC.md §2 "Widgets column", "Fullscreen").
+   The column's box is app.css's (.widgets / .fullscreen); this sheet is the
+   widgets themselves. Every number is the Figma frame's at 1920×1080.
+   ============================================================================= */
+
+/* ═══ one widget ═════════════════════════════════════════════════════════
+   radius 16, padding 16 (the chrome), overflow hidden, a 1px surface ring
+   OUTSIDE the box and the lit umbra INSIDE it (§2). The ring is the box's own
+   shadow — an element's overflow clips its children, not its shadow. The
+   umbra rides on an overlay above the body: an inset shadow paints under the
+   children, and every body here is a photograph or a live frame that would
+   cover it. (The column clips the ring on its own three outer edges; that
+   pixel is app.css's to give back.) ══════════════════════════════════════ */
+.wg{position:relative;flex:none;width:100%;height:var(--wg-h,auto);border-radius:16px;overflow:hidden;
+  isolation:isolate;background:var(--mat-05);color:var(--fg-primary);outline:none;
+  box-shadow:0 0 0 1px var(--surface);
+  animation:wg-in .28s var(--ease) backwards;
+  transition:opacity .18s var(--ease),transform .18s var(--ease)}
+.wg::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:5;
+  box-shadow:var(--umbra-lit)}
+.wg.is-closing{opacity:0;transform:scale(.98)}
+.wg.is-lit{box-shadow:0 0 0 1px var(--surface),0 0 0 3px rgba(125,123,255,.55)}
+@keyframes wg-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* the chrome sits over the body; only its buttons take the pointer */
+.wg-chrome{position:absolute;left:0;top:0;right:0;height:56px;z-index:6;pointer-events:none}
+.wg-title{position:absolute;left:16px;top:10px;max-width:calc(100% - 140px);margin:0;
+  font-size:16px;font-weight:500;line-height:24px;color:var(--fg-primary);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:auto}
+.wg-tools{position:absolute;right:4px;top:4px;display:flex;pointer-events:auto}
+.wg-tools .btn-ghost{color:var(--control-fg-subtle)}
+.wg-tools .btn-ghost:hover{color:var(--fg-primary)}
+/* over the photograph the frame lifts the three buttons to white */
+.wg--scene .wg-tools .btn-ghost{color:var(--fg-primary)}
+
+/* ─── bodies that are a live frame ──────────────────────────────────────── */
+.wg-lens{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:transparent;color-scheme:dark}
+.wg-fallback{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 60%;
+  max-width:none;pointer-events:none;z-index:1;transition:opacity .45s var(--ease)}
+.wg.is-painted .wg-fallback{opacity:0}
+
+/* ═══ Riyadh scene · 462×436 ═══════════════════════════════════════════════
+   --mat-05 + blur 32 under a live street; the body is masked so the top of
+   the capture dissolves under the title. ═══════════════════════════════════ */
+.wg--scene{backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s))}
+.wg-scene{position:absolute;inset:0;z-index:0;
+  -webkit-mask-image:linear-gradient(180deg,transparent -43%,#000 45%);
+  mask-image:linear-gradient(180deg,transparent -43%,#000 45%)}
+
+/* ═══ Global KPIs · 462×604 ════════════════════════════════════════════════ */
+.wg--kpis{background:#000}
+.kpi-bg{position:absolute;left:-1px;top:48px;width:573px;height:475px;max-width:none;object-fit:cover;z-index:0;pointer-events:none}
+/* the round window the planet is seen through: 654 across, its centre 20 left
+   of the widget's (-116 at the frame's 462; the column narrows to 400 under
+   1440 wide). The Lens seats its sphere off the centre of its viewport (clear
+   of a reading column that is hidden here), so the frame inside is cut larger
+   than the window and shifted until the sphere — 670 across — fills the 654
+   opening edge to edge. */
+.kpi-globe{--gd:654px;position:absolute;left:calc(50% - 20px - var(--gd) / 2);top:66px;width:var(--gd);height:var(--gd);
+  border-radius:50%;overflow:hidden;z-index:1;isolation:isolate;
+  transition:left .24s var(--ease),top .24s var(--ease),width .24s var(--ease),height .24s var(--ease)}
+/* The frame's planet is the Lens's own picture at 50%: 6px region labels, 4px
+   pins, hairline leaders — half of what the Lens draws. The Lens fits its
+   sphere to its viewport (Portal.rect is proportional; measured 745 → R 335,
+   1490 → R 670), so a viewport twice the size shown at half is the same
+   sphere in the same seat with every label and pin at the frame's size. */
+.kpi-globe .wg-lens{inset:auto;left:calc(var(--gd) * -.1615);top:calc(var(--gd) * -.0456);
+  width:calc(var(--gd) * 2.278);height:calc(var(--gd) * 2.278);transform:scale(.5);transform-origin:0 0}
+.kpi-globe .wg-fallback{object-position:50% 50%;transform-origin:50% 50%;
+  transition:opacity .45s var(--ease),transform .28s var(--ease)}
+.kpi-glow{position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:3;
+  box-shadow:inset 0 3.7px 11.6px 3px rgba(255,255,255,.9)}
+
+/* the zoom tool: right 8, centred, two 36 buttons on one plate */
+.kpi-zoom{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:4;display:flex;flex-direction:column}
+.kpi-zoom .btn-ghost{width:36px;height:36px;padding:8px;border-radius:0;color:var(--fg-primary);
+  background:rgba(255,255,255,.05);backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum))}
+.kpi-zoom .btn-ghost:first-child{border-radius:8px 8px 0 0}
+.kpi-zoom .btn-ghost:last-child{border-radius:0 0 8px 8px}
+.kpi-zoom .btn-ghost:hover{background:rgba(255,255,255,.12)}
+.kpi-zoom .btn-ghost:active{background:rgba(255,255,255,.18)}
+
+/* ─── the MiniMap: left 7, right 8, bottom 8 (447 wide at the frame's 462) ── */
+.mm{position:absolute;left:7px;right:8px;bottom:8px;z-index:4;display:flex;flex-direction:column;gap:8px;
+  padding:8px;border-radius:12px;background:var(--mat-12);box-shadow:var(--spectrum);
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum))}
+/* the cards run under the MiniMap's side padding and are cut hard at its edge
+   — the frame clips the second card, it does not fade it */
+.mm-strip{display:flex;align-items:stretch;gap:8px;margin:0 -8px;padding:0 8px;scroll-padding:0 8px;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;scroll-behavior:smooth;overscroll-behavior-x:contain}
+.mm-strip::-webkit-scrollbar{height:0}
+.mm-foot{display:flex;align-items:center;gap:8px;height:28px;padding-left:8px}
+.mm-foot>span{flex:1;min-width:0;font-size:14px;font-weight:500;line-height:20px;padding-bottom:1px}
+.mm-foot .seg{flex:none}
+
+/* the signal card, the Lens's own geometry (focus.css .sig): 295.816 wide,
+   padding 8, gap 8, radius 8, a ghost 1px border; chosen = 247.816 wide on
+   --mat-05 with no border; a card with no thumbnail is 193.816 wide */
+.mm-sig{flex:none;width:295.816px;display:flex;align-items:flex-start;gap:8px;padding:8px;border-radius:8px;
+  border:1px solid var(--border-ghost);overflow:hidden;text-align:left;color:var(--fg-primary);
+  transition:background var(--t-state),border-color var(--t-state),width .22s var(--ease)}
+.mm-sig:hover{background:var(--control-bg-transparent-hover)}
+.mm-sig.is-on{width:247.816px;border-color:transparent;background:var(--mat-05);background-clip:padding-box}
+.mm-sig--bare{width:193.816px;padding:8px 16px}
+.mm-sig--bare.is-on{width:191.816px}
+.mm-sig:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--brand)}
+.ms-text{flex:none;width:159.816px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding-top:6px;align-self:stretch}
+.ms-title{width:100%}
+
+/* ═══ bodies in flow: Signals · chart · Action package ═════════════════════
+   the title takes 16 + 24, then the gap of 12 ═══════════════════════════ */
+.wg-flow{position:relative;z-index:0;display:flex;flex-direction:column;gap:12px;padding:52px 16px 16px}
+.wg-sub{font-size:12px;line-height:14px;color:var(--fg-tertiary);margin-top:-6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ─── Signals: five rows, the chosen one lit ────────────────────────────── */
+.wsg{display:flex;flex-direction:column;gap:4px}
+.wsg-row{display:flex;align-items:center;gap:10px;width:100%;padding:6px;border-radius:8px;text-align:left;
+  color:var(--fg-primary);transition:background var(--t-state)}
+.wsg-row:hover{background:var(--control-bg-transparent-hover)}
+.wsg-row.is-on{background:var(--mat-12)}
+.wsg-row:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--brand)}
+.wsg-thumb{--sig-thumb:48px}
+.wsg-thumb .ic{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:var(--fg-tertiary)}
+.wsg-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.wsg-meta{overflow:hidden}
+.wsg-side{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.wsg-when{font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:nowrap}
+
+/* ─── the bar chart ─────────────────────────────────────────────────────── */
+.ch-box{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ch-box--head{gap:12px}
+.ch-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:14px;font-weight:500;line-height:20px;color:var(--fg-primary)}
+.ch-head span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ch-head small{flex:none;font-size:12px;font-weight:400;line-height:14px;color:var(--fg-tertiary)}
+.ch{display:block;width:100%;max-width:100%;height:auto;overflow:visible}
+.ch-bar{transition:opacity var(--t-state)}
+.ch-bar:hover{opacity:.85}
+.ch-val{font-size:12px;font-weight:500;fill:var(--fg-primary)}
+.ch-lab{font-size:12px;fill:var(--fg-tertiary)}
+.ch-base{stroke:var(--border-primary);stroke-width:1}
+.ch-target{stroke:var(--fc-act);stroke-width:.8;stroke-dasharray:2 2}
+.ch-target-lab{font-size:10px;fill:var(--fc-act)}
+.ch-legend{display:flex;align-items:center;gap:6px;font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+.ch-legend i{width:10px;height:10px;border-radius:2px;background:var(--sw)}
+
+/* ─── the action package: three cards ───────────────────────────────────── */
+.ac{display:flex;flex-direction:column;gap:8px}
+.ac-intro{font-size:12px;line-height:16px;color:var(--fg-tertiary)}
+.ac-card{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:var(--mat-12);box-shadow:var(--spectrum)}
+.ac-text{font-size:14px;line-height:20px;color:var(--control-fg-subtle)}
+.ac-row{display:flex;align-items:center;gap:8px;min-width:0}
+.ac-mono{flex:1;min-width:0;font-family:var(--font-mono);font-size:10px;line-height:14px;color:var(--fg-inverse-tertiary);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-effect{font-size:12px;line-height:16px;color:var(--fg-tertiary);padding-left:8px;border-left:1px solid var(--border-primary)}
+.ac-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ac-foot small{font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+.ac-foot .btn[data-done]{opacity:.9}
+
+/* ═══ the empty column ═════════════════════════════════════════════════════ */
+.wg-empty{flex:1;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  padding:16px;text-align:center;font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+.wg-empty .ic{width:20px;height:20px;color:var(--fg-tertiary);opacity:.8}
+
+/* ═══ fullscreen ═══════════════════════════════════════════════════════════
+   the widget is carried into #fullscreen (x358 y8 w1470 h1048 inside the panel,
+   laid out by app.css) and fills it; a placeholder of its height keeps the
+   column's feed where it was. Browsers without a state-preserving move pin it
+   over the same box instead, so the live frame is never reloaded. ═══════ */
+.fullscreen>.wg,.wg.is-pinned{position:absolute;inset:0;height:auto;animation:none}
+.wg.is-pinned{position:fixed;inset:auto;z-index:9}
+/* a non-none backdrop-filter (and an in-flight drawerin transform) makes the drawer a containing
+   block for its position:fixed children — the pinned widget would be offset by the drawer's own
+   origin. is-pinning is only on while a widget covers the page, so dropping both is invisible. */
+.widgets.is-pinning{z-index:9;backdrop-filter:none;-webkit-backdrop-filter:none;animation:none}
+.wg-ph{flex:none;width:100%;border-radius:16px;background:var(--mat-b05);box-shadow:inset 0 0 0 1px var(--border-ghost)}
+.wg.is-full .wg-title{max-width:calc(100% - 160px)}
+.wg.is-full.wg--kpis .kpi-bg{left:0;top:0;width:100%;height:100%}
+.wg.is-full.wg--kpis .kpi-globe{--gd:min(940px,calc(100vh - 220px));left:calc(50% - var(--gd) / 2);top:calc(50% - var(--gd) / 2 + 6px)}
+/* expanded, the Lens is read at its own scale — there is no frame for it, and
+   a 2× viewport of a 940 window on a Retina display is a 15 MP canvas */
+.wg.is-full.wg--kpis .kpi-globe .wg-lens{width:calc(var(--gd) * 1.139);height:calc(var(--gd) * 1.139);transform:none}
+/* the fullscreen frame shows the still 5% closer: 105.8% × 105% of the box,
+   2.9% off its left edge and 2.7% above its top (fitted against the frame) */
+.wg.is-full .wg-scene .wg-fallback{left:-2.9%;top:-2.7%;width:105.8%;height:105%;object-position:50% 50%}
+.wg.is-full .wg-flow{max-width:760px;margin:0 auto}
+.wg.is-full .mm{left:8px;bottom:8px}
+
+@media (prefers-reduced-motion:reduce){
+  .wg,.mm-sig,.kpi-globe,.wg-fallback{transition:none;animation:none}
+  .mm-strip{scroll-behavior:auto}
+}

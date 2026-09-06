@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en" data-page="chat" data-concept="gen" data-widgets="on" data-full="off" data-orb="off" data-console="off" data-rail="on" data-sidebar="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Axion Gen — Future vision</title>
+<link rel="icon" href="assets/figma/logo-axion-future.svg">
+<!-- the design system's variables first, the shell second, then every module's own sheet -->
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/app.css">
+<link rel="stylesheet" href="assets/css/chat.css">
+<link rel="stylesheet" href="assets/css/timeline.css">
+<link rel="stylesheet" href="assets/css/widgets.css">
+<link rel="stylesheet" href="assets/css/library.css">
+<link rel="stylesheet" href="assets/css/pages.css">
+<link rel="stylesheet" href="assets/css/orb.css">
+</head>
+<body>
+
+<!-- ═══ the shell ═══════════════════════════════════════════════════════════
+     Figma 5405:87767 (Home). Two plates on a #262626 ground: the Gen Sidebar rail
+     (60 wide) and the main panel (everything else). The main panel holds the
+     project sidebar (350) and whichever page the route names. Nothing is scaled:
+     at 1920×1080 every box lands on the coordinate read off the frame.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="app" id="app">
+
+  <!-- ─── Gen Sidebar ──────────────────────────────────────────────────── -->
+  <nav class="panel rail" id="rail" aria-label="Sections">
+    <button class="rail-logo" type="button" data-go="#/chat" aria-label="Axion — home">
+      <img src="assets/figma/logo-axion-future.svg" alt="" width="44" height="44">
+    </button>
+    <div class="rail-nav">
+      <button class="rail-btn is-on" type="button" data-go="#/chat" data-nav="chat" aria-label="Axi — chats" aria-current="page"><svg class="ic ic24"><use href="assets/icons/sprite.svg#i-axi"/></svg></button>
+      <button class="rail-btn" type="button" data-go="#/focus" data-nav="focus" aria-label="Focus"><svg class="ic ic24"><use href="assets/icons/sprite.svg#i-house-simple"/></svg></button>
+      <button class="rail-btn" type="button" data-go="#/library" data-nav="library" aria-label="Library"><svg class="ic ic24"><use href="assets/icons/sprite.svg#i-book-open"/></svg></button>
+      <button class="rail-btn" type="button" data-go="#/dashboards" data-nav="dashboards" aria-label="Boards"><svg class="ic ic24"><use href="assets/icons/sprite.svg#i-cards"/></svg></button>
+      <button class="rail-btn" type="button" data-go="#/users" data-nav="users" aria-label="People"><svg class="ic ic24"><use href="assets/icons/sprite.svg#i-user"/></svg></button>
+    </div>
+    <button class="rail-btn rail-collapse" type="button" id="railCollapse" aria-label="Hide the rail"><svg class="ic ic24"><use href="assets/icons/sprite.svg#i-sidebar-simple"/></svg></button>
+    <div class="rail-profile"><button class="avatar" type="button" id="railAvatar" aria-label="Account — Aleksand Shcheblykin">AS</button></div>
+  </nav>
+
+  <!-- the sliver that brings the rail back once it is folded away -->
+  <button class="rail-peek btn-ghost" type="button" id="railPeek" aria-label="Show the rail" hidden><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-sidebar-simple"/></svg></button>
+
+  <!-- ─── the main panel ───────────────────────────────────────────────── -->
+  <div class="panel main" id="main">
+
+    <!-- the project sidebar: projects and their chats -->
+    <aside class="sidebar" id="sidebar" aria-label="Projects and chats">
+      <div class="sb-logo" id="sbLogo">
+        <button class="sb-wordmark" type="button" data-go="#/chat" aria-label="Axion — home"><img src="assets/figma/logo-axion-wordmark.svg" alt="AXION" width="114.498" height="18"></button>
+      </div>
+      <div class="sb-tools">
+        <button class="btn-ghost btn36" type="button" id="sbSearch" aria-label="Search — ⌘K"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-magnifying-glass"/></svg></button>
+        <button class="btn-ghost btn36" type="button" id="sbCollapse" aria-label="Hide the sidebar"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-sidebar-simple"/></svg></button>
+      </div>
+      <nav class="sb-nav" id="sbNav" aria-label="Pages"></nav>
+      <div class="sb-scroll" id="sbScroll"></div>
+      <div class="sb-profile" id="sbProfile">
+        <button class="avatar" type="button" aria-label="Account">AS</button>
+        <div class="sb-profile-text">
+          <span class="sb-profile-name">Aleksand Shcheblykin</span>
+          <span class="sb-profile-mail">a.shcheblykin@axionx.ai</span>
+        </div>
+      </div>
+    </aside>
+
+    <button class="sidebar-peek btn-ghost btn36" type="button" id="sidebarPeek" aria-label="Show the sidebar" hidden><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-sidebar-simple"/></svg></button>
+
+    <div class="pages" id="pages">
+
+      <!-- ─── the chat ───────────────────────────────────────────────────── -->
+      <section class="page page-chat" id="pageChat" aria-label="Chat">
+        <div class="glow" aria-hidden="true"><img src="assets/figma/glow-vector-2842480.svg" alt=""></div>
+
+        <header class="gen-header chat-header" id="chatHeader">
+          <div class="hdr-wrap">
+            <button class="btn-ghost btn36 project-icon" type="button" id="projectIcon" aria-label="Project"><img src="assets/figma/icon-sidebar-group.svg" alt="" width="18.64" height="14.87"></button>
+          </div>
+          <button class="hdr-title" type="button" id="projectSwitch" aria-haspopup="menu" aria-expanded="false">
+            <span id="projectName">KSA insights</span>
+            <svg class="ic ic16 caret"><use href="assets/icons/sprite.svg#i-caret-down"/></svg>
+          </button>
+          <div class="hdr-wrap hdr-right">
+            <button class="btn-ghost btn36" type="button" id="btnConsole" aria-label="Agent console — ⌘J" aria-pressed="false"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-terminal"/></svg></button>
+            <button class="btn-ghost btn36 btn-quiet" type="button" id="btnWidgets" aria-label="Show or hide the widgets" aria-pressed="true"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-cards"/></svg></button>
+            <button class="btn-ghost btn36" type="button" id="btnFiles" aria-label="Project files"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-folder-simple"/></svg></button>
+            <button class="btn-ghost btn36" type="button" id="btnChatMenu" aria-label="Chat menu"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-dots-three"/></svg></button>
+          </div>
+        </header>
+
+        <!-- not a live region: a reply streams word by word; finished sentences go to #announce via App.announce -->
+        <div class="thread" id="thread" tabindex="0" aria-label="The conversation"></div>
+
+        <div class="composer" id="composer">
+          <div class="plus-options" id="plusOptions" role="menu" hidden></div>
+          <div class="input" id="inputBar">
+            <button class="btn-ghost btn48" type="button" id="btnPlus" aria-label="Add to the message" aria-expanded="false"><svg class="ic ic24"><use href="assets/icons/sprite.svg#i-plus"/></svg></button>
+            <div class="field">
+              <textarea class="ask-field" id="askField" rows="1" placeholder="Ask anything..." aria-label="Ask anything" autocomplete="off"></textarea>
+            </div>
+            <button class="btn-ghost model-btn" type="button" id="btnModel" aria-haspopup="menu" aria-expanded="false"><span id="modelName">GPT-5.6 Luna</span><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-caret-down"/></svg></button>
+            <button class="btn-ghost btn48" type="button" id="btnMic" aria-label="Talk to Axi" aria-pressed="false"><svg class="ic ic24"><use href="assets/icons/sprite.svg#i-microphone"/></svg></button>
+          </div>
+        </div>
+
+        <aside class="widgets" id="widgets" aria-label="What the agent opened"></aside>
+        <div class="fullscreen" id="fullscreen" hidden></div>
+      </section>
+
+      <!-- ─── Library ────────────────────────────────────────────────────── -->
+      <section class="page page-library" id="pageLibrary" aria-label="Library" hidden>
+        <header class="gen-header lib-header" id="libHeader">
+          <div class="hdr-nav">
+            <div class="hdr-wrap">
+              <button class="btn-ghost btn28" type="button" id="libBack" aria-label="Back"><svg class="ic ic16"><use href="assets/icons/sprite.svg#i-caret-left"/></svg></button>
+              <button class="btn-ghost btn28" type="button" id="libFwd" aria-label="Forward"><svg class="ic ic16"><use href="assets/icons/sprite.svg#i-caret-right"/></svg></button>
+            </div>
+            <input class="lib-title" id="libTitle" type="text" value="axion_sense.frames" aria-label="Dataset name" spellcheck="false">
+          </div>
+          <div class="hdr-actions">
+            <div class="seg seg-icons" id="libView" role="group" aria-label="View">
+              <button class="seg-btn is-on" type="button" data-view="table" aria-label="Table"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-table"/></svg></button>
+              <button class="seg-btn" type="button" data-view="map" aria-label="Map"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-map-trifold"/></svg></button>
+            </div>
+            <button class="btn-ghost btn36" type="button" id="libSettings" aria-label="View settings"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-sliders-horizontal"/></svg></button>
+            <button class="btn-ghost btn36" type="button" id="libFilter" aria-label="Filters"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-funnel-simple"/></svg></button>
+            <button class="btn-ghost btn36" type="button" id="libColumns" aria-label="Columns"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-columns"/></svg></button>
+            <button class="btn-light btn-ask" type="button" id="libAsk"><span>Ask Axsi</span><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-circle-quarter"/></svg></button>
+            <button class="btn-ghost btn36" type="button" id="libMore" aria-label="More"><svg class="ic ic20"><use href="assets/icons/sprite.svg#i-dots-three"/></svg></button>
+          </div>
+        </header>
+        <div class="lib-body" id="libBody"></div>
+        <footer class="lib-rows" id="libRows"></footer>
+        <aside class="lib-panel" id="libPanel" aria-label="Frame details" hidden></aside>
+      </section>
+
+      <!-- ─── Focus mode: the existing product screen, live ─────────────── -->
+      <section class="page page-focus" id="pageFocus" aria-label="Focus mode" hidden>
+        <iframe class="focus-frame" id="focusFrame" title="Axion Gen — Focus mode" loading="lazy"></iframe>
+      </section>
+
+      <!-- ─── Scheduled · Signals · Dashboards · Users ───────────────────── -->
+      <section class="page page-simple" id="pageSimple" hidden></section>
+
+    </div>
+  </div>
+
+  <!-- ─── Axi, the orb: floats over every page ─────────────────────────── -->
+  <div class="orb-layer" id="orbLayer"></div>
+
+  <!-- ─── the agent console: what the agent did, as it did it ──────────── -->
+  <aside class="console" id="console" aria-label="Agent console" hidden></aside>
+
+  <!-- menus, popovers, the command palette, toasts -->
+  <div class="layer" id="layer"></div>
+
+  <!-- what a screen reader is told, one finished sentence at a time (App.announce) -->
+  <div class="sr-only" id="announce" aria-live="polite" aria-atomic="true"></div>
+</div>
+
+<!-- the content, then the shell, then every module; app.js boots once all are defined -->
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/timeline.js"></script>
+<script src="assets/js/widgets.js"></script>
+<script src="assets/js/chat.js"></script>
+<script src="assets/js/library.js"></script>
+<script src="assets/js/pages.js"></script>
+<script src="assets/js/orb.js"></script>
+</body>
+</html>

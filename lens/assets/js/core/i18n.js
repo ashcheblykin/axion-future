@@ -1,0 +1,67 @@
+/* =============================================================================
+   i18n.js — chrome strings only, in both languages.
+   Everything with a figure or a place name in it comes from CV.I18N / the data,
+   which is bilingual already. Nothing is translated twice.
+   ============================================================================= */
+(function () {
+  const S = {
+    en: {
+      brand_a: 'LENS', brand_b: 'VISION',
+      stub_badge: 'ENTRY STUB',
+      stub_feed: 'City signals', stub_insights: 'Insights', stub_agents: 'Agents',
+      stub_note: 'A stand-in for the surfaces that will call the Lens. The master dashboard is a separate track.',
+      lens_close: 'Close', lens_of: 'of',
+      ribbon: 'Subjects', readings: 'readings', ribbon_hint: '↑ ↓ to move · ← → to change the lens',
+      w_detail: 'Event detail', w_timeline: 'Handling timeline', w_inspection: 'Inspection record',
+      w_slice: 'The slice that allowed it', w_kpi: 'Related indicators',
+      w_actions: 'Actions taken', w_prevention: 'Prevention', w_escalation: 'Escalation',
+      w_evidence: 'Evidence', w_social: 'Social signal', w_sla: 'Age and SLA',
+      w_reco: 'Recommendations', w_root: 'Root-cause analysis', w_trend: 'Behaviour over time',
+      w_complaints: 'Related citizen complaints', w_contractor: 'Contracted operator',
+      w_violations: 'Enforcement on the operator', w_whatif: 'If the package is executed',
+      commit: 'Commit', committed: 'Committed', owner: 'Owner', due: 'Due', effect: 'Effect',
+      scope_site: 'Site', scope_city: 'City-wide', scope_ksa: 'Kingdom-wide', scope_reg: 'Region-wide',
+      target: 'target', usual: 'Usual range', now: 'This month',
+      source: 'Source', licence: 'Licence', category: 'Category', amana: 'Amana',
+      past_sla: 'past SLA', risk: 'Risk', mentions: 'Mentions', reach: 'Reach', sentiment: 'Sentiment',
+      lens_map_pin: 'Location', lens_map_layer: 'Context', lens_street: 'Street',
+      lens_scene: 'Scene', lens_media: 'Evidence media', lens_narrative: 'Provenance',
+      lens_node: 'Reasoning',
+      illustrative: 'Illustrative — not a measured figure',
+      no_media: 'No captured media on this subject',
+      trace: 'SOURCE',
+      days_ago: 'days ago', stale: 'Older than the required cycle',
+      before: 'now', after: 'after',
+    },
+    ar: {
+      brand_a: 'العدسة', brand_b: 'رؤية',
+      stub_badge: 'واجهة مؤقتة',
+      stub_feed: 'إشارات المدينة', stub_insights: 'الرؤى', stub_agents: 'الوكلاء',
+      stub_note: 'بديل مؤقت عن الشاشات التي ستستدعي العدسة. لوحة المؤشرات الرئيسية مسار منفصل.',
+      lens_close: 'إغلاق', lens_of: 'من',
+      ribbon: 'العناصر', readings: 'قراءات', ribbon_hint: '↑ ↓ للتنقل · ← → لتبديل العدسة',
+      w_detail: 'تفاصيل الحدث', w_timeline: 'مسار المعالجة', w_inspection: 'سجل التفتيش',
+      w_slice: 'الشريحة التي سمحت بالحدث', w_kpi: 'المؤشرات المرتبطة',
+      w_actions: 'ما تم اتخاذه', w_prevention: 'الوقاية', w_escalation: 'التصعيد',
+      w_evidence: 'الأدلة', w_social: 'الإشارة الاجتماعية', w_sla: 'العمر ومستوى الخدمة',
+      w_reco: 'التوصيات', w_root: 'التحليل الجذري', w_trend: 'السلوك عبر الزمن',
+      w_complaints: 'شكاوى المواطنين المرتبطة', w_contractor: 'المشغل المتعاقد',
+      w_violations: 'الإنفاذ على المشغل', w_whatif: 'إذا نُفذت الحزمة',
+      commit: 'اعتماد', committed: 'معتمد', owner: 'الجهة', due: 'الموعد', effect: 'الأثر',
+      scope_site: 'الموقع', scope_city: 'على مستوى المدينة', scope_ksa: 'على مستوى المملكة', scope_reg: 'على مستوى المنطقة',
+      target: 'المستهدف', usual: 'النطاق المعتاد', now: 'هذا الشهر',
+      source: 'المصدر', licence: 'الرخصة', category: 'التصنيف', amana: 'الأمانة',
+      past_sla: 'تجاوز مستوى الخدمة', risk: 'الخطورة', mentions: 'الإشارات', reach: 'الوصول', sentiment: 'الانطباع',
+      lens_map_pin: 'الموقع', lens_map_layer: 'السياق', lens_street: 'الشارع',
+      lens_scene: 'المشهد', lens_media: 'الأدلة المصورة', lens_narrative: 'المصدر',
+      lens_node: 'الاستدلال',
+      illustrative: 'توضيحي — ليس رقمًا مقاسًا',
+      no_media: 'لا توجد وسائط ملتقطة لهذا العنصر',
+      trace: 'المصدر',
+      days_ago: 'يومًا', stale: 'أقدم من الدورة المطلوبة',
+      before: 'الآن', after: 'بعد',
+    },
+  };
+  window.LVT = k => (S[window.LV ? LV.lang : 'en'][k] !== undefined ? S[LV.lang][k] : k);
+  window.LVT.dict = S;
+})();

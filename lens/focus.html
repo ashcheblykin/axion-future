@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<!-- viewport-fit=cover is what makes env(safe-area-inset-*) anything but zero;
+     the shell reads all four in focus.css so the dock clears the home
+     indicator and the work area clears a landscape notch. -->
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Axion Gen — Focus mode</title>
+<link rel="stylesheet" href="assets/focus/focus.css">
+<link rel="stylesheet" href="assets/focus/seg.css">
+</head>
+<body>
+
+<!-- ═══ the icon set — path data lifted verbatim from the Figma components
+     (Cards 2075:27644, List 1090:11311, DotsNine 3260:28349, WaveSine
+     5267:97589, HouseSimple 1640:13028, BookOpen 494:20783, User 2075:28025,
+     SidebarSimple 494:20964, X 1120:12371, ThumbsUp/Down 3051:13798/13757,
+     Plus 684:10913, Check 789:5318, CaretLeft/Right 766:10924 / 1858:24933).
+     Each symbol keeps its own drawing grid, so the stroke widths render at the
+     weight they were drawn at. Colour comes from the context. ═══════════════ -->
+<svg class="sprite" aria-hidden="true" width="0" height="0"><defs>
+  <symbol id="i-cards" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><path d="M14.375 6.25H3.125C2.77982 6.25 2.5 6.52982 2.5 6.875V15.625C2.5 15.9702 2.77982 16.25 3.125 16.25H14.375C14.7202 16.25 15 15.9702 15 15.625V6.875C15 6.52982 14.7202 6.25 14.375 6.25Z"/><path d="M5 3.75H16.875C17.0408 3.75 17.1997 3.81585 17.3169 3.93306C17.4342 4.05027 17.5 4.20924 17.5 4.375V13.75"/></g></symbol>
+  <symbol id="i-cards-nav" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.6"><path d="M14.375 6.25H3.125C2.77982 6.25 2.5 6.52982 2.5 6.875V15.625C2.5 15.9702 2.77982 16.25 3.125 16.25H14.375C14.7202 16.25 15 15.9702 15 15.625V6.875C15 6.52982 14.7202 6.25 14.375 6.25Z"/><path d="M5 3.75H16.875C17.0408 3.75 17.1997 3.81585 17.3169 3.93306C17.4342 4.05027 17.5 4.20924 17.5 4.375V13.75"/></g></symbol>
+  <symbol id="i-list" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="2"><path d="M3.125 10H16.875"/><path d="M3.125 5H16.875"/><path d="M3.125 15H16.875"/></g></symbol>
+  <symbol id="i-list-thin" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><path d="M3.125 10H16.875"/><path d="M3.125 5H16.875"/><path d="M3.125 15H16.875"/></g></symbol>
+  <symbol id="i-dots" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g fill="currentColor" stroke="none"><circle cx="4.6875" cy="4.6875" r=".9375"/><circle cx="10" cy="4.6875" r=".9375"/><circle cx="15.3125" cy="4.6875" r=".9375"/><circle cx="4.6875" cy="10" r=".9375"/><circle cx="10" cy="10" r=".9375"/><circle cx="15.3125" cy="10" r=".9375"/><circle cx="4.6875" cy="15.3125" r=".9375"/><circle cx="10" cy="15.3125" r=".9375"/><circle cx="15.3125" cy="15.3125" r=".9375"/></g></symbol>
+  <symbol id="i-wave" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M1.875 10C10 -7.32031 10 27.3203 18.125 10" stroke-width="1.7"/></symbol>
+  <symbol id="i-house-fill" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 9.375V16.875C17.5 17.0408 17.4342 17.1997 17.3169 17.3169C17.1997 17.4342 17.0408 17.5 16.875 17.5H3.125C2.95924 17.5 2.80027 17.4342 2.68306 17.3169C2.56585 17.1997 2.5 17.0408 2.5 16.875V9.375C2.49942 9.21066 2.53151 9.04785 2.59441 8.89602C2.65731 8.7442 2.74977 8.6064 2.86641 8.49063L9.11641 2.24062C9.3508 2.00638 9.66862 1.8748 10 1.8748C10.3314 1.8748 10.6492 2.00638 10.8836 2.24062L17.1336 8.49063C17.2502 8.6064 17.3427 8.7442 17.4056 8.89602C17.4685 9.04785 17.5006 9.21066 17.5 9.375Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-book" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.6"><path d="M10 6.875C10 6.21196 10.2634 5.57607 10.7322 5.10723C11.2011 4.63839 11.837 4.375 12.5 4.375H18.125V15.625H12.5C11.837 15.625 11.2011 15.8884 10.7322 16.3572C10.2634 16.8261 10 17.462 10 18.125"/><path d="M1.875 15.625H7.5C8.16304 15.625 8.79893 15.8884 9.26777 16.3572C9.73661 16.8261 10 17.462 10 18.125V6.875C10 6.21196 9.73661 5.57607 9.26777 5.10723C8.79893 4.63839 8.16304 4.375 7.5 4.375H1.875V15.625Z"/></g></symbol>
+  <symbol id="i-user" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.6"><path d="M10 12.5C12.7614 12.5 15 10.2614 15 7.5C15 4.73858 12.7614 2.5 10 2.5C7.23858 2.5 5 4.73858 5 7.5C5 10.2614 7.23858 12.5 10 12.5Z"/><path d="M2.5 16.875C4.01328 14.2602 6.76172 12.5 10 12.5C13.2383 12.5 15.9867 14.2602 17.5 16.875"/></g></symbol>
+  <symbol id="i-sidebar" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.6"><path d="M6.875 3.75V16.25"/><path d="M16.875 3.75H3.125C2.77982 3.75 2.5 4.02982 2.5 4.375V15.625C2.5 15.9702 2.77982 16.25 3.125 16.25H16.875C17.2202 16.25 17.5 15.9702 17.5 15.625V4.375C17.5 4.02982 17.2202 3.75 16.875 3.75Z"/></g></symbol>
+  <symbol id="i-x" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><path d="M15.625 4.375L4.375 15.625"/><path d="M15.625 15.625L4.375 4.375"/></g></symbol>
+  <symbol id="i-thumb-up" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><path d="M2 6.5H5V13H2C1.86739 13 1.74021 12.9473 1.64645 12.8536C1.55268 12.7598 1.5 12.6326 1.5 12.5V7C1.5 6.86739 1.55268 6.74021 1.64645 6.64645C1.74021 6.55268 1.86739 6.5 2 6.5Z"/><path d="M5 6.5L7.5 1.5C8.03043 1.5 8.53914 1.71071 8.91421 2.08579C9.28929 2.46086 9.5 2.96957 9.5 3.5V5H13.5C13.6419 5.00004 13.7821 5.03026 13.9113 5.08865C14.0406 5.14704 14.156 5.23227 14.2498 5.33867C14.3436 5.44507 14.4137 5.57021 14.4555 5.70579C14.4972 5.84136 14.5096 5.98426 14.4919 6.125L13.7419 12.125C13.7114 12.3666 13.5939 12.5888 13.4113 12.7499C13.2286 12.911 12.9935 12.9999 12.75 13H5"/></g></symbol>
+  <symbol id="i-thumb-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><path d="M2 3H5V9.5H2C1.86739 9.5 1.74021 9.44732 1.64645 9.35355C1.55268 9.25979 1.5 9.13261 1.5 9V3.5C1.5 3.36739 1.55268 3.24021 1.64645 3.14645C1.74021 3.05268 1.86739 3 2 3Z"/><path d="M5 9.5L7.5 14.5C8.03043 14.5 8.53914 14.2893 8.91421 13.9142C9.28929 13.5391 9.5 13.0304 9.5 12.5V11H13.5C13.6419 11 13.7821 10.9697 13.9113 10.9114C14.0406 10.853 14.156 10.7677 14.2498 10.6613C14.3436 10.5549 14.4137 10.4298 14.4555 10.2942C14.4972 10.1586 14.5096 10.0157 14.4919 9.875L13.7419 3.875C13.7114 3.63339 13.5939 3.41119 13.4113 3.25009C13.2286 3.08899 12.9935 3.00007 12.75 3H5"/></g></symbol>
+  <symbol id="i-plus" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><path d="M3.125 10H16.875"/><path d="M10 3.125V16.875"/></g></symbol>
+  <symbol id="i-check" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3.125 11.25L7.5 15.625L17.5 5.625" stroke-width="1.2"/></symbol>
+  <symbol id="i-caret-left" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13L5 8L10 3" stroke-width="1.2"/></symbol>
+  <symbol id="i-caret-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L11 8L6 13" stroke-width="1.2"/></symbol>
+  <symbol id="i-caret-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6L8 11L3 6" stroke-width="1"/></symbol>
+  <symbol id="i-play" viewBox="0 0 17.5 24"><path d="M0 0 17.5 12 0 24Z" fill="currentColor"/></symbol>
+
+  <symbol id="i-mic" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><path d="M10 12.5a3.125 3.125 0 0 0 3.125-3.125v-5a3.125 3.125 0 0 0-6.25 0v5A3.125 3.125 0 0 0 10 12.5Z"/><path d="M15.625 9.375a5.625 5.625 0 0 1-11.25 0"/><path d="M10 15v2.5"/></g></symbol>
+  <symbol id="i-stop" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="10" height="10" rx="2" stroke-width="1.2"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.4"><path d="M10 16.25V3.75"/><path d="M4.375 9.375 10 3.75l5.625 5.625"/></g></symbol>
+  <symbol id="i-globe" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15"/><path d="M10 2.5c2 2.2 3 4.7 3 7.5s-1 5.3-3 7.5c-2-2.2-3-4.7-3-7.5s1-5.3 3-7.5Z"/></g></symbol>
+  <symbol id="i-cube" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.4"><path d="M10 2.4 17 6.2v7.6L10 17.6 3 13.8V6.2Z"/><path d="M3 6.2 10 10l7-3.8"/><path d="M10 10v7.6"/></g></symbol>
+  <symbol id="i-speaker" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><path d="M10.625 3.125 6.25 6.875H3.125a.625.625 0 0 0-.625.625v5c0 .345.28.625.625.625H6.25l4.375 3.75V3.125Z"/><path d="M14.375 7.5a3.75 3.75 0 0 1 0 5"/><path d="M16.5 5a6.875 6.875 0 0 1 0 10"/></g></symbol>
+  <symbol id="i-speaker-off" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="1.2"><path d="M10.625 3.125 6.25 6.875H3.125a.625.625 0 0 0-.625.625v5c0 .345.28.625.625.625H6.25l4.375 3.75V3.125Z"/><path d="m14.375 8.125 3.75 3.75"/><path d="m18.125 8.125-3.75 3.75"/></g></symbol>
+</defs></svg>
+
+<!-- ═══ the shell. The rail and the assistant hold their width, the stage takes
+     what is left, and anything that can outgrow its room scrolls inside it.
+     Nothing is scaled: the design's numbers are the numbers. ═══════════════ -->
+<div class="app" id="app" data-lens="location" data-layout="columns" data-listen="off" data-voice="idle">
+
+  <!-- the planet is drawn on the viewport; the stage's clear area is only the
+       aperture it is seated in. See assets/focus/globe/aperture.js -->
+  <canvas id="world" aria-hidden="true"></canvas>
+  <div class="pins" id="pins" aria-label="The documented cases, on the planet"></div>
+
+  <!-- The environment lens: full bleed, behind everything. Alone among the
+       readings this one is a measurement rather than a drawing — the Olaya
+       Street capture, drawn by Spark on the canvas below. The photograph stays
+       in the markup underneath it as what a machine without WebGL2 is shown
+       instead, and is only ever fetched in that case. -->
+  <div class="backdrop">
+    <div class="lens lens--scene">
+      <canvas class="scene" id="scene3d"></canvas>
+      <img data-src="assets/focus/img/scene-street.jpg" alt="" class="scene scene-still" id="sceneStill" decoding="async" fetchpriority="low" hidden>
+      <p class="scene-note" id="sceneNote"></p>
+    </div>
+  </div>
+
+  <div class="shell">
+
+    <button class="rail-peek btn-ghost" id="railPeek" type="button" aria-label="Show the rail" hidden>
+      <svg class="ic ic20"><use href="#i-sidebar"/></svg>
+    </button>
+
+    <!-- ═══ the rail ═══════════════════════════════════════════════════════ -->
+    <nav class="panel rail" id="rail" aria-label="Sections">
+      <button class="logo" type="button" aria-label="MOMAH — home"><img src="assets/focus/img/logo-momah.svg" alt="" width="44" height="44"></button>
+      <div class="rail-nav">
+        <button class="btn-ghost btn36 is-on" type="button" aria-label="Focus" aria-current="page"><svg class="ic ic20"><use href="#i-house-fill"/></svg></button>
+        <button class="btn-ghost btn36" type="button" aria-label="Library"><svg class="ic ic20"><use href="#i-book"/></svg></button>
+        <button class="btn-ghost btn36" type="button" aria-label="Boards"><svg class="ic ic20"><use href="#i-cards-nav"/></svg></button>
+        <button class="btn-ghost btn36" type="button" aria-label="People"><svg class="ic ic20"><use href="#i-user"/></svg></button>
+      </div>
+      <button class="btn-ghost btn36" id="railToggle" type="button" aria-label="Hide the rail"><svg class="ic ic20"><use href="#i-sidebar"/></svg></button>
+      <div class="rail-profile"><button class="avatar" type="button" aria-label="Account — AS">AS</button></div>
+    </nav>
+
+    <!-- ═══ the stage and everything that floats on it ═════════════════════ -->
+    <main class="work" id="work">
+
+      <nav class="scale-bar" id="scaleBar" aria-label="Where the planet is pointed" hidden></nav>
+
+      <div class="stage" id="stage">
+        <div class="stage-free" id="stageFree">
+          <!-- the clip, on the place it was taken -->
+          <div class="lens lens--media">
+            <div class="media" id="media"></div>
+            <p class="where" id="where" hidden></p>
+          </div>
+          <!-- the objects the register holds under this case, read through the
+               same lens: what was detected, where, how often, how long ago -->
+          <div class="lens lens--objects">
+            <div class="objects" id="objects"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- at the frame's width these two are pinned to the stage's corners and the
+           wrapper is display:contents; on a small screen it becomes the row -->
+      <div class="headers">
+      <header class="panel gen-header title" id="titleBar">
+        <div class="nav-pair">
+          <button class="btn-ghost btn28" id="prevSubject" type="button" aria-label="Previous signal"><svg class="ic ic16"><use href="#i-caret-left"/></svg></button>
+          <button class="btn-ghost btn28" id="nextSubject" type="button" aria-label="Next signal"><svg class="ic ic16"><use href="#i-caret-right"/></svg></button>
+        </div>
+        <div class="title-text">
+          <span class="title-1" id="titleName">KSA insights</span>
+          <span class="title-2" id="titleSub">in Focus</span>
+        </div>
+        <button class="time-chip" type="button" id="timeChip" hidden title="Back to now"></button>
+      </header>
+
+      <div class="panel gen-header tools">
+        <div class="seg">
+          <button class="seg-btn" type="button" aria-label="Cards"><svg class="ic ic20"><use href="#i-cards"/></svg></button>
+          <button class="seg-btn seg-dim" id="toggleAssistant" type="button" aria-label="Hide the assistant" aria-pressed="true"><svg class="ic ic20"><use href="#i-list"/></svg></button>
+          <button class="seg-btn is-solid" type="button" aria-label="Grid"><svg class="ic ic20"><use href="#i-dots"/></svg></button>
+        </div>
+        <button class="cta-listen" id="listen" type="button" aria-pressed="false">
+          <svg class="ic ic20"><use href="#i-wave"/></svg>
+          <span id="listenLabel">Ask Axi</span>
+        </button>
+      </div>
+
+      <!-- Which of the four faces the work area is showing. A phone holds one
+           at a time, so the four things the frame lays out side by side —
+           the reading, what happened, what to do about it, the thread — become
+           four stops on one strip. It is a .seg-slide like every other choice
+           on this screen, so seg.js carries the same chip across it, and it is
+           drawn only inside the phone's own breakpoint; at the frame's width
+           it is display:none and the four are side by side as before. -->
+      <div class="seg seg-text seg-slide pane-strip" id="paneTabs" role="group" aria-label="Which face"></div>
+      </div>
+
+      <section class="col col-left" id="colLeft" aria-label="What happened"></section>
+      <section class="col col-right" id="colRight" aria-label="The slice that allowed it"></section>
+
+      <!-- The sparkle, opened. One bar for the whole screen, seated on whichever
+           reading was asked: the two columns and the objects grid are written
+           again whenever the subject or the month changes, so a field living
+           inside a card would lose what had been typed into it half way through
+           a sentence. The chip at its end is the same 20×20 the closed sparkle
+           is, in the same place — the bar grows out of it and folds back into
+           it, so what the reader clicked is what they are now typing in. -->
+      <div class="askbar" id="askBar" role="group" aria-label="Ask about this reading" hidden>
+        <div class="askbar-in">
+          <button class="btn-ghost btn28" id="askMic" type="button" aria-pressed="false" aria-label="Speak the question">
+            <svg class="ic ic16"><use href="#i-mic"/></svg>
+          </button>
+          <input class="askbar-field" id="askInput" type="text" autocomplete="off"
+                 placeholder="Ask about this" aria-label="Ask about this reading">
+        </div>
+        <button class="ask askbar-spark" id="askSpark" type="button" aria-label="Send the question">
+          <img src="assets/focus/img/sparkle.svg" alt="" width="16" height="16">
+        </button>
+      </div>
+
+      <!-- The foot of the work area carries two plates, side by side, in the
+           order they are read: which signal, then when. The ribbon on the left
+           is the choice of subject; the strip on the right is the scale of time
+           that subject is read on. -->
+      <div class="dock" id="dock">
+        <section class="panel signalbar" id="signalbar" aria-label="Signals and insights">
+          <div class="signalbar-head">
+            <span class="signalbar-title">Signals</span>
+            <div class="seg seg-text seg-slide" id="lensTabs" role="group" aria-label="Readings"></div>
+          </div>
+          <div class="signals" id="signals" tabindex="0" role="listbox" aria-orientation="horizontal" aria-label="The signals shelf"></div>
+        </section>
+
+        <footer class="panel timebar" id="timebar">
+          <div class="tl-chrome">
+            <span class="tl-month" id="tlDate"></span>
+            <p class="tl-read"><span id="tlValue"></span><i class="tl-sep" id="tlSep" hidden> &middot; </i><b id="tlBranch"></b></p>
+            <button class="btn btn-glass tl-now" type="button" id="tlNow" hidden>Back to now</button>
+            <div class="seg seg-text seg-slide" id="tlBranches" role="group" aria-label="Which forecast">
+              <button class="seg-btn tl-b-base" type="button" data-branch="base">No action</button>
+              <button class="seg-btn tl-b-act" type="button" data-branch="act">With action package</button>
+            </div>
+          </div>
+          <div class="tl-plot">
+            <!-- the record's ground, reaching the plate's own edge -->
+            <div class="tl-past" id="tlPast" aria-hidden="true"></div>
+            <div class="tl-track" id="tlTrack" role="slider" tabindex="0"
+                 aria-label="Month on the record and the forecast"
+                 aria-valuemin="0" aria-valuemax="30" aria-valuenow="17">
+              <canvas id="tlCanvas" aria-hidden="true"></canvas>
+              <div class="tl-layer" id="tlMarks"></div>
+              <div class="tl-layer" id="tlPoints"></div>
+              <div class="tl-layer" id="tlRisks"></div>
+              <div class="tl-handle" id="tlHandle"></div>
+            </div>
+            <div class="tl-months" id="tlMonths" aria-hidden="true"></div>
+          </div>
+        </footer>
+      </div>
+
+    </main>
+
+    <!-- ═══ the assistant ══════════════════════════════════════════════════ -->
+    <aside class="panel assistant" id="assistant" aria-label="Agent">
+      <div class="assistant-glow" aria-hidden="true"><img src="assets/focus/img/assistant-glow.svg" alt=""></div>
+
+      <header class="assistant-head">
+        <button class="btn-ghost btn36" type="button" aria-label="Thread menu"><svg class="ic ic20"><use href="#i-list-thin"/></svg></button>
+        <button class="assistant-title" id="threadTitle" type="button" aria-expanded="false">
+          <span>Agent&rsquo;s insights</span>
+          <svg class="ic ic16 caret"><use href="#i-caret-down"/></svg>
+        </button>
+        <button class="btn-ghost btn36" id="closeAssistant" type="button" aria-label="Close the assistant"><svg class="ic ic20"><use href="#i-x"/></svg></button>
+      </header>
+
+      <div class="assistant-body" id="thread" tabindex="0" aria-live="polite" aria-label="The conversation"></div>
+
+      <!-- The bar is where a question is put, and nothing else: what is heard
+           is read in the thread itself, on the live line the foot of the
+           conversation ends on. focus.js writes it there. -->
+      <div class="assistant-input">
+        <div class="input" id="inputBar">
+          <button class="btn-ghost btn36" id="mic" type="button" aria-label="Speak to the agent" aria-pressed="false"><svg class="ic ic20"><use href="#i-mic"/></svg></button>
+          <div class="wave" id="wave" aria-hidden="true"></div>
+          <input class="ask-field" id="askField" type="text" placeholder="Ask the agent" aria-label="Ask the agent">
+          <button class="btn-ghost btn36" id="send" type="button" aria-label="Send"><svg class="ic ic20"><use href="#i-arrow-up"/></svg></button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- the source document, verbatim -->
+<script defer src="assets/js/data/world-110m.js"></script>
+<script defer src="assets/js/data/cv-core.js"></script>
+
+<!-- the planet: the City View renderer, its aperture pointed at the stage -->
+<script defer src="assets/focus/globe/aperture.js"></script>
+<script defer src="assets/focus/globe/state.js"></script>
+<script defer src="assets/focus/globe/geo.js"></script>
+<!-- where the captures are on the ground, and the card the map raises over one.
+     Both before mapview.js, which draws the footprint and answers the pointer. -->
+<script defer src="assets/focus/globe/scenes.js"></script>
+<script defer src="assets/focus/globe/scenecard.js"></script>
+<script defer src="assets/focus/globe/mapview.js"></script>
+
+<!-- the subject, read off the document; then the screen -->
+<script defer src="assets/focus/model.js"></script>
+<script defer src="assets/focus/globe.js"></script>
+<script defer src="assets/focus/agent.js"></script>
+<script defer src="assets/focus/timeline.js"></script>
+<!-- the recount: figures and bars walked from one reading to the next -->
+<script defer src="assets/focus/live.js"></script>
+<!-- the reply, read out by whatever voice this machine has -->
+<script defer src="assets/focus/speak.js"></script>
+<script defer src="assets/focus/focus.js"></script>
+<!-- last, so every group it takes over is built and marked by the time it runs -->
+<script defer src="assets/focus/seg.js"></script>
+<!-- what the edge of a panel catches off the scenery it stands on. After the
+     screen is written, and it seats itself again on whatever is written next. -->
+<script defer src="assets/focus/rim.js"></script>
+
+<!-- ═══ the street reading ══════════════════════════════════════════════════
+     The only part of this page that is a renderer rather than a drawing, and
+     the only one written as a module — Spark and three.js are ES modules and
+     ask for each other by name. The map below is how those names resolve to
+     the copies committed under assets/vendor/, so the page still ships with
+     everything it runs. Both libraries are MIT; their licences sit beside
+     them. Modules run after the deferred classic scripts above, which is why
+     focus.js leaves its request for the scene on the window rather than
+     calling into a module that does not exist yet. ═══════════════════════ -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "./assets/vendor/three/three.module.min.js",
+    "three/addons/": "./assets/vendor/three/addons/",
+    "@sparkjsdev/spark": "./assets/vendor/spark/spark.module.min.js"
+  }
+}
+</script>
+<script type="module" src="assets/focus/scene3d.js"></script>
+</body>
+</html>

@@ -1,0 +1,1608 @@
+/* =============================================================================
+   focus.css — Axion Gen · Focus mode.
+
+   A real layout, not a scaled picture: the rail and the assistant hold their
+   width, the stage takes what is left, and anything that can outgrow its room
+   scrolls inside it. Every number is the number in the Figma frame — spacing,
+   radius, type, material — carried by a shell that adapts.
+
+   Figma: XDOceRokvyikE1cuk6HO9S · node 5281:167391
+   ============================================================================= */
+
+/* ---- the typeface the design system names. Trial licence, so it is linked
+   from the machine rather than shipped; the stack below is the fallback. ---- */
+@font-face{font-family:"ABC Diatype";font-weight:400;font-style:normal;font-display:swap;
+  src:local("ABC Diatype Trial Regular"),local("ABCDiatypeTrial-Regular"),local("ABC Diatype Regular"),local("ABCDiatype-Regular")}
+@font-face{font-family:"ABC Diatype";font-weight:500;font-style:normal;font-display:swap;
+  src:local("ABC Diatype Trial Medium"),local("ABCDiatypeTrial-Medium"),local("ABC Diatype Medium"),local("ABCDiatype-Medium")}
+@font-face{font-family:"ABC Diatype";font-weight:700;font-style:normal;font-display:swap;
+  src:local("ABC Diatype Trial Bold"),local("ABCDiatypeTrial-Bold"),local("ABC Diatype Bold"),local("ABCDiatype-Bold")}
+
+:root{
+  /* ---- the design system's variables, verbatim ---------------------------- */
+  --fg-primary:#fdfdfd;
+  --fg-inverse-tertiary:#797979;
+  --surface:rgba(0,0,0,.8);                    /* surface            · #000000cc */
+  --on-surface-primary:rgba(255,255,255,.05);  /* on-surface-primary · #ffffff0d */
+  --border-primary:rgba(253,253,253,.1);
+  --border-ghost:rgba(253,253,253,.05);
+  --control-fg-subtle:#dcdcdc;
+  --control-fg-subtle-active:#f9f9f9;
+  --control-fg-subtle-inverse:#262626;
+  --control-bg-tretiary:#3c3c3c;
+  --control-bg-secondary-inverse:#f4f4f4;
+  --control-bg-transparent-hover:rgba(253,253,253,.05);
+  --control-bg-transparent-pressed:rgba(253,253,253,.1);
+  --brand:#7d7bff;
+  --info:#4cb4ff;
+  --assistant-input:rgba(255,255,255,.08);
+  --light-800:rgba(253,253,253,.8);
+  --light-300:rgba(253,253,253,.3);
+
+  /* ---- Axion material: one tint riding on one surface --------------------
+     A material is not two gradients. It is an overlay — a flat gradient, so
+     it can be stacked — over the surface colour underneath it. That is the
+     shape the file gives it, and writing it any other way loses the token. */
+  --mat-05:linear-gradient(0deg,var(--on-surface-primary) 0%,var(--on-surface-primary) 100%),var(--surface);      /* Axion material/Primary    */
+  --mat-10:linear-gradient(0deg,rgba(255,255,255,.1) 0%,rgba(255,255,255,.1) 100%),var(--surface);                /* the assistant's bubble    */
+  --mat-12:linear-gradient(0deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.12) 100%),var(--surface);              /* Axion material/Secondary  */
+  --mat-b05:linear-gradient(0deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.05) 100%),var(--surface);                         /* Axion material/On Primary */
+  /* The same secondary tint on a deeper surface. Every other material on this
+     screen stands over the planet or a photograph; this one stands over a
+     reading's own paragraph, where the system's 80% black still lets white
+     body copy read through the words being typed on top of it. */
+  --mat-over:linear-gradient(0deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.12) 100%),rgba(0,0,0,.94);
+
+  /* ---- the three effect styles this screen is built from -----------------
+     Shadow/Axion umbra: two lit edges inside, a hairline of the surface
+     outside — in the file's own order, the inner pair first. */
+  --umbra-lit:0 .5px .75px 0 rgba(255,255,255,.25) inset,
+              0 -.5px .75px 0 rgba(255,255,255,.25) inset;
+  --umbra:var(--umbra-lit),0 0 0 .5px var(--surface);
+  /* Shadow/Axion spectrum: a hairline of the border colour, and the deepest
+     blur on the screen. What the dock and the assistant's bubble wear. */
+  --spectrum:0 0 .5px .5px var(--border-primary);
+  /* Shadow/medium: the one cast shadow in the system — what a round control
+     lifted off a photograph wears. Its radius is blur/s used as a shadow. */
+  --shadow-medium:0 10px 32px 0 rgba(0,0,0,.16);
+  /* Modal/Primary: the lifted sheet — a light hairline, an ambient drop, one
+     lit top edge. What a reading wears once it is the one in hand. */
+  --modal-lit:0 .5px 1px 0 rgba(255,255,255,.22) inset;
+  --modal:0 0 0 .5px #dbdbdb,
+          0 18px 48px rgba(0,0,0,.25),
+          var(--modal-lit);
+
+  /* ---- the blur scale, and nothing off it -------------------------------
+     Figma states these as effect radii; CSS takes half of each, so Blur/Window
+     at 36 is 18px here and the spectrum's 512 is 256px. */
+  --blur-modal:12px;      /* Modal/Primary         · radius 24  */
+  --blur-window:18px;     /* Blur/Window           · radius 36  */
+  --blur-s:32px;          /* blur/s                · radius 64  */
+  --blur-l:64px;          /* blur/l                · radius 128 */
+  --blur-xl:128px;        /* the header, the assistant          */
+  --blur-spectrum:256px;  /* Shadow/Axion spectrum · radius 512 */
+
+  /* ---- the shell's own measurements -------------------------------------- */
+  --gap:8px;
+  --rail-w:60px;
+  --assistant-w:350px;
+  --col-left-w:384px;
+  --col-right-w:258px;
+  --col-top:68px;
+  --shelf-clear:150px;   /* set from the measured shelf in focus.js */
+
+  /* ---- the planet's palette. The City View renderer reads these off the page
+     with getComputedStyle; the seven it runs through parseInt(hex,16) must stay
+     hex literals or every band wash paints as rgba(NaN,NaN,NaN). ----------- */
+  --gold:#E5A94C;  --gold-hi:#FFD79A;  --sig:#3A7BD5;
+  /* the two branches of the projection, as the timeline frame draws them */
+  --fc-base:#e5ab3c;   /* no action        */
+  --fc-act:#00d39b;    /* with the package */
+  --band-0:#2fbf7a; --band-1:#5ccf9f; --band-2:#e5aa3c; --band-3:#ef8a4d; --band-4:#ef5f57;
+  /* the dot beside the thread's title when a live agent is answering. It was
+     used below and declared nowhere, so both the background and the glow were
+     invalid at computed-value time and fell back to transparent: the screen
+     could not say it had a proxy. The value is the source document's own. */
+  --good:#5ccf9f;
+  --bg-void:#04060B;
+  /* the sky the street capture is seen under — measured off its own pixels,
+     see #scene3d */
+  --sky-high:#93a0da;
+  --sky-low:#b3b7e2;
+  --sky-haze:#c6cbea;
+  /* the edge of a capture's footprint on the map, and the word "3D SCENE" on
+     the card it raises. --sig is the interface's blue and is too dark to read
+     as an outline over a night-time basemap; this is that hue carried up until
+     it does, which also puts it beside the capture's own daylight sky rather
+     than against it. */
+  --scene-edge:#8ec2ff;
+  --bg-deep:#070A12;
+  --ink:#EEF2F8;  --ink-dim:#7A879B;  --ink-faint:#4A566A;
+  --basemap-land:#33405A;
+  --basemap-coast:rgba(162,192,226,.34);
+  --globe-highlight-fill:hsla(38,26%,52%,0.22);
+  --globe-highlight-stroke:hsl(38,46%,66%);
+  --region-stroke-width:1;
+  --region-stroke-alpha:0.5;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,monospace;
+  --font-disp:"ABC Diatype",-apple-system,BlinkMacSystemFont,"Helvetica Neue",system-ui,sans-serif;
+
+  --ease:cubic-bezier(.2,.7,.2,1);
+
+  /* ---- the recount ------------------------------------------------------
+     Choosing another signal re-reads every figure in the right-hand column.
+     These are how long that reading takes and how far it cascades down the
+     column, and they are the only copy of either: the bars below transition on
+     them, and live.js reads them off the page rather than restating them. The
+     curve is ease-out cubic written both ways — the bars take the bezier, the
+     counting figures take the same curve as arithmetic. */
+  --live-run:560ms;
+  --live-step:28ms;
+  --live-ease:cubic-bezier(.215,.61,.355,1);
+
+  /* ---- what the edge catches --------------------------------------------
+     A panel's rim is sampled against the scenery just outside it and painted
+     with what is found there, so the stretch of edge crossing a green region
+     goes green and the stretch crossing the void stays plain. rim.js reads
+     these off the page; this is the only copy of any of them.
+
+     What a stretch reflects is CONTRAST: how far it stands above the rest of
+     the same edge, in colour more than in light, on a screen that is dark as a
+     whole. The two thresholds are that distance: a stretch standing less than
+     the floor above the rest reflects nothing, one standing the ceiling above
+     it — a region wash beside a card that is otherwise on the night basemap —
+     reflects in full. The ground is the screen: on the night map a rim shows
+     all of that, on a photograph none of it, whatever colour the photograph
+     has beside the card. Raise the floor and the rim goes quiet; raise the
+     light and it shouts; take the contrast out and it becomes a coloured
+     border, which says something different and untrue. */
+  --rim-reach:14px;   /* how far past its own edge a rim looks               */
+  --rim-step:40px;    /* how often it looks, walking that edge               */
+  --rim-floor:.08;    /* a stretch this far above the rest starts to show    */
+  --rim-ceil:.28;     /* and this far above it is reflected in full          */
+  --rim-lit:.3;       /* the strongest any rim is ever drawn                 */
+  --rim-ground:.5;    /* a screen this bright as a whole shows nothing at all */
+  --rim-thru:.22;     /* what still reads through a panel standing in front  */
+  --rim-mip:220;      /* how wide the one small copy of the scenery is       */
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg-void);overflow:hidden;
+  font-family:"ABC Diatype","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight:400;color:var(--fg-primary);letter-spacing:0;
+  -webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;
+}
+.sprite{position:absolute;width:0;height:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+p{margin:0}
+a{color:var(--info);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* A ring outside the element is clipped by half the panels on this screen, so
+   controls that live inside one wear the ring on the inside instead. */
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.input :focus-visible,.sig:focus-visible,.seg-btn:focus-visible,.pin:focus-visible,
+.signals:focus-visible,.assistant-body:focus-visible,.col:focus-visible{
+  outline:none;box-shadow:inset 0 0 0 2px var(--brand)}
+/* the ring belongs to the field being typed in, not to every button in the bar */
+.input:has(.ask-field:focus){box-shadow:inset 0 0 0 1px var(--brand)}
+
+/* ═══ the shell ═══════════════════════════════════════════════════════════ */
+.app{position:fixed;inset:0;background:var(--bg-void);overflow:hidden;isolation:isolate}
+/* drag turns the planet, the wheel steps down through Kingdom → amana → city */
+#world{position:fixed;inset:0;z-index:0;display:block;cursor:grab;touch-action:none}
+#world:active{cursor:grabbing}
+/* A reading is a reading OF somewhere. The planet stays under the clip, dimmed
+   and still pinned, so the clip is seen at the place it was taken rather than
+   on a black rectangle. Only the street reading replaces it — it is itself the
+   place. */
+/* The street reading covers the map rather than replacing it: the canvas stays
+   in the page, invisible under an opaque frame, because the wheel that brought
+   the camera down to street level has to be able to take it back out again.
+   Everything on the backdrop is pointer-events:none, so the gesture reaches
+   the planet through the photograph. */
+[data-lens="media"] #world{filter:saturate(.7) brightness(.62)}
+
+.pins{position:fixed;inset:0;z-index:3;pointer-events:none}
+[data-lens="scene"] .pins{display:none}
+/* A reading standing on the stage IS the thing being read, and every one of
+   the six cases projects into the box it occupies: measured at 1920×1080, all
+   six pins land inside the objects grid and five of six inside the clip, with
+   elementFromPoint returning the pin. So where a reading covers the planet the
+   pins go behind it — still lit, still marking the place, no longer sitting on
+   a card's face or in the middle of the footage. */
+[data-lens="media"] .pins,[data-lens="objects"] .pins{z-index:1}
+[data-lens="media"] .pin:not(.is-on){opacity:.35}
+/* the planet names what the cursor is over */
+.globe-tip{position:fixed;z-index:5;transform:translate(-50%,-100%);pointer-events:none;
+  padding:4px 8px;border-radius:6px;white-space:nowrap;
+  font-family:var(--font-mono);font-size:11px;line-height:14px;color:var(--control-fg-subtle);
+  background:var(--mat-12);box-shadow:var(--umbra);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s))}
+.globe-tip[hidden]{display:none}
+
+/* ---- the card the capture's footprint raises ----------------------------
+   The planet's tip names a country in one line. This one names a measurement,
+   and a measurement has to be accountable: what it is, where it was taken,
+   how much of it there is, when, and — because this page draws a twelfth of
+   what was measured — how much of it is on screen. Four rows, the same four
+   the product's card carries, so the two read as one thing.
+
+   Wider than a tooltip and clamped to the window by scenecard.js, which is
+   why there is no translate() here: the position it writes is already the
+   corner the card is drawn from. */
+/* Opaque, unlike .globe-tip. That chip names a country over the void and can
+   afford to be a film; this one is read against a capture of a street, and a
+   translucent card over a photograph of a road is unreadable at exactly the
+   moment it is wanted. So the material is laid over --bg-void rather than over
+   whatever is behind it, and the blur is kept only for the edge. */
+.scene-card{position:fixed;z-index:4;pointer-events:none;width:260px;overflow:hidden;
+  border-radius:12px;border:1px solid rgba(255,255,255,.15);
+  background:linear-gradient(0deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,.06) 100%),var(--bg-void);
+  box-shadow:0 12px 32px rgba(0,0,0,.55),var(--umbra);
+  color:var(--control-fg-subtle);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s))}
+.scene-card[hidden]{display:none}
+/* the street reading covers the map outright, so nothing the map raises over
+   itself belongs on top of it — the same rule .pins keeps */
+[data-lens="scene"] .scene-card{display:none}
+.sc-head{padding:9px 11px 10px;border-bottom:1px solid rgba(255,255,255,.10)}
+.sc-eyebrow{display:flex;align-items:center;gap:5px;margin-bottom:5px;
+  font-family:var(--font-mono);font-size:9.5px;line-height:12px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--scene-edge)}
+.sc-eyebrow .ic12{width:11px;height:11px}
+.sc-name{display:block;font-size:12.5px;line-height:16px;font-weight:600;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-place{display:block;margin-top:1px;font-size:11px;line-height:14px;color:var(--ink-dim)}
+/* three cells divided by the background showing through a one-pixel gap —
+   the same trick the product's grid uses, and it survives the blur behind */
+.sc-cells{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:rgba(255,255,255,.10)}
+.sc-cell{min-width:0;padding:7px 8px 8px;background:var(--bg-void)}
+.sc-k{display:block;font-family:var(--font-mono);font-size:9px;line-height:11px;
+  letter-spacing:.04em;color:var(--ink-faint)}
+.sc-v{display:block;margin-top:3px;font-size:11.5px;line-height:14px;font-weight:600;
+  color:var(--ink);white-space:nowrap}
+.sc-foot{padding:7px 11px 8px;border-top:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.035);
+  font-size:10px;line-height:13px;color:var(--ink-dim)}
+
+.pin{position:absolute;left:0;top:0;width:14px;height:14px;padding:0;border-radius:50%;
+  pointer-events:auto;display:grid;place-items:center;transition:transform .1s linear}
+.pin i{width:8px;height:8px;border-radius:50%;background:var(--pin);
+  box-shadow:0 0 0 1.5px rgba(0,0,0,.55),0 0 10px color-mix(in srgb,var(--pin) 60%,transparent);
+  transition:transform .18s var(--ease)}
+.pin:hover i{transform:scale(1.35)}
+.pin.is-on i{transform:scale(1.5)}
+/* pins fanned off a shared point keep a thread back to where they really are */
+.pin.is-fanned:not(.is-edge)::before{content:"";position:absolute;inset:-1px;border-radius:50%;
+  box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+/* A case that is off the map — past the window the readings leave it, under a
+   panel, or round the back of the planet — is not dropped: its pin rides the
+   border with an arrow at the bearing the case lies on, the way a game map
+   keeps a place you have zoomed past on the edge of the screen. */
+.pin.is-edge i{transform:scale(.78)}
+.pin.is-edge:hover i{transform:scale(1.1)}
+.pin.is-edge.is-on i{transform:scale(1.2)}
+.pin.is-edge::before{content:"";position:absolute;left:50%;top:50%;width:0;height:0;
+  border:3.5px solid transparent;border-left:6px solid var(--pin);opacity:.95;
+  transform:translate(-50%,-50%) rotate(var(--ang,0deg)) translateX(10px);
+  filter:drop-shadow(0 0 4px color-mix(in srgb,var(--pin) 50%,transparent))}
+.pin.is-on::after{content:"";position:absolute;inset:-5px;border-radius:50%;
+  border:1px solid var(--pin);opacity:.6;animation:ping 2.2s var(--ease) infinite}
+@keyframes ping{0%{transform:scale(.7);opacity:.7}70%,100%{transform:scale(1.6);opacity:0}}
+
+/* the environment is scenery too — it must not stand on the planet either */
+.backdrop{position:absolute;inset:0;z-index:0;pointer-events:none}
+.shell{position:absolute;inset:var(--gap);display:flex;gap:var(--gap);z-index:2;min-height:0;pointer-events:none}
+.shell>*{pointer-events:auto}
+.rail{flex:none;width:var(--rail-w)}
+/* the work box is a frame around the planet, not a sheet over it: the pointer
+   falls through everywhere the panels are not */
+.work{flex:1 1 auto;min-width:0;position:relative;isolation:isolate;pointer-events:none}
+.work>*{pointer-events:auto}
+.assistant{flex:none;width:var(--assistant-w)}
+
+[data-rail="off"] .rail{display:none}
+[data-assistant="off"] .assistant{display:none}
+
+/* ---- shared atoms -------------------------------------------------------- */
+.ic{display:block;width:16px;height:16px;overflow:visible}
+.ic20{width:20px;height:20px}
+.ic16{width:16px;height:16px}
+.ic12{width:12px;height:12px}
+
+.panel{position:relative;isolation:isolate;border-radius:16px;box-shadow:var(--umbra)}
+/* An inset shadow is painted directly onto its own element's background — and
+   then every child paints over it. The material here is a child, so the two
+   lit edges the umbra puts on the box were buried under it and no panel had a
+   rim. Figma stacks them the other way round: the material first, the lit
+   edges on a layer above it. So they are declared here, on the material
+   itself, where they are the last thing drawn before the content.
+
+   The ring keeps its place on the box: it falls outside, where nothing
+   covers it. */
+.panel::before{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--mat-05);
+  box-shadow:var(--umbra-lit);pointer-events:none;z-index:0}
+.panel>*{position:relative;z-index:1}
+
+/* ── the reflection on the rim ────────────────────────────────────────────
+   One layer per sheet of glass, one pixel wide, carrying nothing but the
+   colour rim.js sampled off the scenery beside it — see the header there for
+   what is sampled and why it is only ever partial. The ring is a padding-box
+   mask composited away from the whole box, the same figure the brand ring on a
+   reading in hand is drawn with, so a conic gradient laid across the box
+   survives only along its edge, corners included.
+
+   An element rather than a ::after because on these surfaces ::after is spoken
+   for three times over: the journal's flash on a card, the brand ring on the
+   reading a question was asked of, and the vignette on a clip. It is absolute
+   and empty, so nothing that measures a panel or counts what is in one sees
+   it — and the four parents are written out rather than left to `.rim` alone
+   because `.summary>*` further down this file would otherwise put the layer
+   back into the summary's flow, where it would cost that card a 12px row.
+   The list is the same four rim.js walks; the two are read together.
+
+   z-index 2, above the material and above the content — which never reaches
+   the edge anyway, every one of these being padded — and under the ring on the
+   reading a question was asked of, which is the louder statement and takes the
+   edge back for as long as it is there. */
+.panel>.rim,.summary>.rim,.obj>.rim,.media>.rim{
+  position:absolute;inset:0;z-index:2;border-radius:inherit;pointer-events:none;
+  padding:1px;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+          mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude}
+.is-asking>.rim{opacity:0}
+
+.btn-ghost{display:flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;
+  color:var(--fg-primary);transition:background .12s ease,color .12s ease}
+.btn36{height:36px;padding:8px}
+.btn28{height:28px;padding:6px;border-radius:6px}
+.btn-ghost:hover{background:var(--control-bg-transparent-hover)}
+.btn-ghost.is-on{background:var(--control-bg-transparent-pressed)}
+.btn-ghost[disabled]{opacity:.35;cursor:default}
+.btn-ghost[disabled]:hover{background:none}
+
+.dot{width:6px;height:6px;border-radius:1000px;background:var(--dot);flex:none}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:56px;
+  padding:4px 8px;border-radius:6px;font-size:12px;font-weight:500;line-height:16px;
+  transition:filter .12s ease,background .18s var(--ease),color .18s var(--ease)}
+.btn:hover{filter:brightness(1.12)}
+.btn-light{background:var(--control-bg-secondary-inverse);color:var(--control-fg-subtle-inverse)}
+.btn-glass{background:var(--mat-12);color:var(--control-fg-subtle)}
+.btn-grey{background:var(--control-bg-tretiary);color:var(--control-fg-subtle)}
+.btn[data-done]{background:var(--control-bg-transparent-pressed);color:var(--control-fg-subtle);pointer-events:none}
+.acts{display:flex;align-items:flex-start;justify-content:space-between;width:100%;gap:8px}
+
+.seg{display:flex;gap:6px;padding:2px;border-radius:8px;background:var(--mat-b05)}
+.seg-btn{display:flex;align-items:center;justify-content:center;padding:6px;border-radius:6px;
+  color:var(--fg-primary);transition:background .14s var(--ease),color .14s var(--ease)}
+.seg-btn.seg-dim{color:#9e9e9e}
+.seg-btn.is-on{background:var(--mat-12)}
+.seg-btn.is-solid{background:var(--control-bg-tretiary)}
+.seg-text{gap:4px;padding:2px;border-radius:8px;background:var(--mat-05)}
+.seg-text .seg-btn{padding:4px 6px;font-size:12px;font-weight:400;line-height:16px;color:var(--control-fg-subtle);background:none}
+.seg-text .seg-btn:hover{color:var(--fg-primary)}
+.seg-text .seg-btn.is-on{background:var(--mat-12);color:var(--control-fg-subtle-active)}
+/* a reading the case cannot carry is not dimmed, it is off the strip */
+.seg-btn[hidden]{display:none}
+
+/* ═══ the stage ═══════════════════════════════════════════════════════════ */
+/* the stage is scenery: it must not stand between the pointer and the planet */
+.stage{position:absolute;inset:0;z-index:0;overflow:visible;border-radius:16px;pointer-events:none}
+.stage-free{pointer-events:none}
+.media,.scene-note{pointer-events:auto}
+.lens{position:absolute;inset:0;display:none}
+[data-lens="media"] .lens--media,
+[data-lens="scene"] .lens--scene,
+[data-lens="objects"] .lens--objects{display:block}
+/* an object stands somewhere: the map stays under the cards, dimmed, and the
+   pin for this case stays lit */
+[data-lens="objects"] #world{filter:saturate(.6) brightness(.5)}
+[data-lens="objects"] .pin:not(.is-on){opacity:.3}
+
+/* The room the two readings leave. What is placed on the stage is placed in
+   here, so nothing slides under a column as the window narrows. The planet's
+   aperture reads this box too — assets/focus/globe/aperture.js. */
+.stage-free{position:absolute;top:0;bottom:0;
+  left:calc(var(--col-left-w) + 4px);right:var(--col-right-w)}
+
+/* ── the objects reading ─────────────────────────────────────────────────
+   The same aperture the clip uses, filled with what the register holds about
+   the things standing in the districts under this case. */
+/* the same box as a reading column, and the same dissolve — carried by the
+   tiles rather than by the box around them */
+.objects{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;pointer-events:auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:8px;
+  align-content:start;padding:calc(var(--col-top) + 12px) 16px var(--shelf-clear) 4px;
+  scrollbar-width:none;overscroll-behavior:contain}
+.objects::-webkit-scrollbar{width:0}
+.obj{position:relative;display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;
+  background:var(--mat-12);box-shadow:var(--umbra);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s));
+  transition:box-shadow .18s var(--ease),transform .18s var(--ease)}
+.obj:hover{transform:translateY(-1px)}
+.obj.is-picked{transform:translateY(-1px)}
+/* A tile has no room to hang it off: the grid runs three up with an eight
+   pixel gutter, so a sparkle overhanging the corner lands on the neighbour —
+   and the last column's landed under the second reading column, where it could
+   be seen but never clicked (measured: elementFromPoint at its own centre
+   returned .col-right). So on a tile it sits inside the corner, and the
+   severity dot the head carries there steps aside to make the room. */
+.obj .ask{right:9px;top:9px}
+.obj-head{transition:padding-right .2s var(--ease)}
+.obj.is-picked .obj-head{padding-right:22px}
+.obj-head{display:flex;align-items:center;gap:8px}
+.obj-ic{font-size:16px;line-height:20px;flex:none}
+.obj-what{flex:1;min-width:0;font-size:13px;font-weight:500;line-height:16px}
+.obj-where{font-family:var(--font-mono);font-size:10px;line-height:14px;color:var(--fg-inverse-tertiary)}
+.obj-counts{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin:0}
+.obj-counts div{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.obj-counts dt{font-size:11px;line-height:14px;color:var(--fg-inverse-tertiary)}
+.obj-counts dd{margin:0;font-size:13px;font-weight:500;line-height:15px;font-variant-numeric:tabular-nums}
+.obj-last{font-size:11px;line-height:14px;color:var(--control-fg-subtle)}
+.obj-last b{font-weight:500;color:var(--fg-primary)}
+.obj-kpi{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;
+  padding-top:8px;border-top:1px solid var(--border-ghost);
+  font-size:11px;line-height:15px;color:var(--fg-inverse-tertiary)}
+.obj-kpi b{font-size:14px;font-weight:500}
+.obj-kpi span{font-family:var(--font-mono);font-size:10px}
+.obj-ev{margin:0;padding-left:14px;font-size:11px;line-height:15px;color:var(--control-fg-subtle)}
+.obj-ev li{list-style:disc}
+.obj-note{grid-column:1/-1;font-size:11px;line-height:15px;color:var(--fg-inverse-tertiary);padding:4px 2px 0}
+
+/* the clip sits on the place, with just enough shadow to lift off it */
+.media{position:absolute;border-radius:16px;overflow:hidden;background:#000;
+  box-shadow:0 24px 64px rgba(0,0,0,.55),0 0 0 .5px rgba(253,253,253,.14)}
+.media::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  box-shadow:inset 0 .5px 1px rgba(255,255,255,.22)}
+/* the place the clip was taken, named on the backdrop beside it */
+.where{position:absolute;z-index:2;display:flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:8px;background:var(--mat-12);box-shadow:var(--umbra);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s));
+  font-size:12px;line-height:15px;color:var(--control-fg-subtle);white-space:nowrap;
+  pointer-events:auto}
+.where b{font-weight:500;color:var(--fg-primary)}
+.where .dot{--dot:var(--info)}
+.media video,.media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.media-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:64px;height:64px;border-radius:50%;background:var(--surface);color:#fff;
+  box-shadow:var(--shadow-medium);
+  backdrop-filter:blur(var(--blur-l));-webkit-backdrop-filter:blur(var(--blur-l));
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .16s var(--ease),opacity .16s ease}
+.media-play:hover{transform:translate(-50%,-50%) scale(1.06)}
+.media.is-playing .media-play{opacity:0;pointer-events:none}
+.ic.play{width:17.5px;height:24px;transform:translate(2.25px,-1.5px)}
+.media-cap{position:absolute;left:0;right:0;bottom:0;padding:12px 16px;
+  font-size:12px;line-height:15px;color:var(--fg-primary);
+  background:linear-gradient(0deg,rgba(0,0,0,.72),rgba(0,0,0,0))}
+
+/* the environment fills the window and everything else sits on it */
+.scene{width:100%;height:100%;object-fit:cover;object-position:50% 100%;display:block}
+/* The capture stops where the camera that shot it stopped, and above the
+   rooftops that is nothing at all — a void the colour of the rest of the
+   screen, which read as night over a scene shot at midday. So the sky is the
+   canvas's own background and the splats are drawn over it: the renderer
+   clears to nothing, the CSS underneath is what shows through the gaps.
+
+   The two ends are measured off the capture's own sky rather than chosen —
+   its blue pixels sit at #b5b4dd high in the frame and #babce7 near the
+   horizon, which is haze, and the gradient is those two carried a little
+   further apart so that where the capture's sky ends nothing changes. */
+#scene3d{background:linear-gradient(180deg,var(--sky-high) 0%,var(--sky-low) 72%,var(--sky-haze) 100%)}
+/* The capture is the one thing on the backdrop that answers the pointer: it is
+   not a picture of a place, it is the place, and the only way to read it is to
+   move in it. The rule is pinned to the reading being open rather than to the
+   canvas existing, so everywhere else the note above .backdrop still holds and
+   the gesture goes on reaching the planet. Backing out past the edge of what
+   was measured hands the camera back — see assets/focus/scene3d.js. */
+[data-lens="scene"] #scene3d{pointer-events:auto;cursor:grab;touch-action:none}
+[data-lens="scene"] #scene3d:active{cursor:grabbing}
+/* the photograph is what a machine without WebGL2 is shown instead */
+#scene3d[hidden],.scene-still[hidden]{display:none}
+/* the caption is seated in the stage's clear area, like everything else on it */
+.scene-note{position:absolute;left:calc(var(--rail-w) + 2 * var(--gap) + var(--col-left-w) + 4px);
+  right:calc(var(--assistant-w) + 2 * var(--gap) + var(--col-right-w));
+  bottom:calc(var(--shelf-clear) + 8px);margin-inline:auto;width:max-content;max-width:min(520px,100%);
+  padding:6px 12px;border-radius:8px;background:var(--mat-05);
+  box-shadow:var(--umbra);font-size:12px;line-height:15px;color:var(--control-fg-subtle);text-align:center}
+/* The caption is centred in the room the two readings leave — the same box the
+   aperture is seated in — but it re-derived that box by hand instead of reading
+   it, so it was 20px off the stage's own left edge and, once the rail or the
+   assistant was folded away, it stayed put while the room moved out from under
+   it: measured 157px off centre with the assistant closed. Held in :where() so
+   these keep the plain .scene-note weight and the widths below still win on
+   source order. */
+:where([data-rail="off"]) .scene-note{left:calc(52px + var(--col-left-w) + 4px)}
+:where([data-assistant="off"]) .scene-note{right:calc(var(--col-right-w) + var(--gap))}
+
+/* ═══ the rail ════════════════════════════════════════════════════════════ */
+.rail{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px;overflow:hidden}
+/* Alone among the panels the rail wears no glass in the file — the material
+   and the umbra, and the planet behind it stays sharp. */
+.logo{display:flex;align-items:center;justify-content:center;gap:8px;padding:4px;border-radius:8px;width:100%}
+.logo img{display:block;width:44px;height:44px;filter:brightness(0) invert(1)}
+.rail-nav{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
+.rail .btn-ghost{color:var(--control-fg-subtle)}
+.rail .btn-ghost.is-on{color:var(--control-fg-subtle-active)}
+.rail-profile{width:100%;display:flex;align-items:center;justify-content:center;padding:8px;border-top:1px solid var(--border-ghost)}
+.avatar{width:36px;height:36px;border-radius:8px;background:var(--control-bg-secondary-inverse);
+  color:var(--control-fg-subtle-inverse);font-size:14px;font-weight:700;line-height:20px;
+  display:flex;align-items:center;justify-content:center}
+
+/* the rail folds away; the sliver that brings it back takes the strip it left,
+   rather than sitting on top of the header's first button */
+.rail-peek{flex:none;align-self:flex-start;height:36px;padding:8px;border-radius:8px;
+  color:var(--control-fg-subtle);background:var(--mat-05);box-shadow:var(--umbra)}
+.rail-peek[hidden]{display:none}
+
+/* ═══ the subject, named ══════════════════════════════════════════════════ */
+.headers{display:contents}
+.scale-bar{position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:5;
+  display:flex;align-items:center;gap:2px;height:36px;padding:4px 6px;border-radius:10px;
+  background:var(--mat-12);box-shadow:var(--umbra);font-size:12px;line-height:16px;
+  backdrop-filter:blur(var(--blur-xl));-webkit-backdrop-filter:blur(var(--blur-xl));max-width:60%;overflow:hidden}
+.scale-bar[hidden]{display:none}
+.scale-bar i{opacity:.35;font-style:normal;padding:0 1px}
+.scale-step{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;
+  color:var(--control-fg-subtle);white-space:nowrap;transition:background .12s ease,color .12s ease}
+.scale-step:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.scale-step[aria-current]{color:var(--fg-primary);background:var(--control-bg-transparent-pressed)}
+.scale-home{padding:4px 6px}
+.gen-header{height:52px;display:flex;align-items:center;padding:8px;overflow:hidden}
+.title{position:absolute;left:0;top:0;width:auto;min-width:192px;
+  max-width:calc(var(--col-left-w) + 24px);gap:8px;z-index:5}
+.title::before{backdrop-filter:blur(var(--blur-xl));-webkit-backdrop-filter:blur(var(--blur-xl))}
+.nav-pair{display:flex;align-items:center;flex:none}
+.title-text{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px}
+/* when the handle is not standing on NOW, the header says so — a figure read
+   at another month, or projected onto one, must never look like today's */
+.time-chip{flex:none;align-self:center;padding:4px 8px;border-radius:8px;
+  font-family:var(--font-mono);font-size:11px;line-height:14px;white-space:nowrap;
+  background:var(--mat-05);box-shadow:inset 0 0 0 1px var(--border-primary)}
+.time-chip[data-when="fwd"]{color:var(--gold-hi);box-shadow:inset 0 0 0 1px rgba(229,169,76,.35)}
+.time-chip[data-when="back"]{color:var(--ink-dim)}
+.time-chip:hover{background:var(--mat-12)}
+.title-1,.title-2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px;display:block}
+.title-1{font-size:16px;font-weight:500;line-height:16px}
+.title-2{font-size:12px;font-weight:400;line-height:14px;color:var(--fg-inverse-tertiary)}
+
+/* ═══ the tools ═══════════════════════════════════════════════════════════ */
+.tools{position:absolute;right:0;top:0;gap:8px;z-index:4}
+.tools::before{backdrop-filter:blur(var(--blur-xl));-webkit-backdrop-filter:blur(var(--blur-xl))}
+.cta-listen{display:flex;align-items:center;justify-content:center;gap:6px;height:36px;min-width:72px;
+  padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.04);color:var(--control-fg-subtle);
+  box-shadow:var(--umbra-lit);
+  transition:color .2s var(--ease),box-shadow .2s var(--ease)}
+.cta-listen span{font-size:14px;font-weight:500;line-height:20px;white-space:nowrap}
+.cta-listen[aria-pressed="true"]{color:#d5d4ff;
+  box-shadow:0 -4px 12px 0 #7d7bff inset,var(--umbra-lit)}
+.cta-listen[aria-pressed="true"] .ic{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* ═══ the two reading columns ═════════════════════════════════════════════ */
+/* 4px of the top is padding, so the first card's ring and ambient shadow are
+   not clipped; the content still starts where the frame puts it */
+/* The column reaches the top of the stage and holds its first card down with
+   padding, so scrolled content passes UNDER the header panels, and dissolves
+   in the room between.
+
+   The dissolve is NOT a mask on the column. It cannot be: a mask — and a
+   clip-path, and a filter, and an opacity below 1 — makes its element a
+   BACKDROP ROOT, and a backdrop root is where `backdrop-filter` stops looking.
+   Every card inside a masked column was flat, whatever blur it declared.
+
+   A mask on the READING itself is fine: an element's own mask does not touch
+   its own backdrop-filter, only its children's. So each reading fades itself,
+   and focus.js tells it how much of the dissolve to draw from where it stands
+   in the column. Only a reading actually crossing an end carries a mask at
+   all — see .is-fading below. */
+.col{position:absolute;top:0;bottom:0;display:flex;flex-direction:column;gap:8px;
+  z-index:2;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain}
+.col::-webkit-scrollbar{width:0}
+/* The four stops focus.js measures, in the reading's own coordinates: clear
+   above the first, solid from the second, solid until the third, clear past
+   the fourth. A reading standing in the open carries no mask at all, so the
+   button that hangs off its corner and the ambient shadow of the picked one
+   keep their room. */
+.is-fading{
+  -webkit-mask-image:linear-gradient(180deg,transparent var(--fade-a),#000 var(--fade-b),
+    #000 var(--fade-c),transparent var(--fade-d));
+  mask-image:linear-gradient(180deg,transparent var(--fade-a),#000 var(--fade-b),
+    #000 var(--fade-c),transparent var(--fade-d));
+  /* A mask clips its element to the border box unless told otherwise, and the
+     sparkle hangs eleven pixels off the corner — so every reading crossing an
+     end lost the outer half of its button, and what was left of it could not be
+     clicked either (elementFromPoint at its own centre returned the column).
+     The mask still repeats, so the overhang takes the same alpha as the row it
+     stands in; it is only the clip that has to go. The ambient shadow of the
+     reading in hand keeps its room the same way. */
+  -webkit-mask-clip:no-clip;mask-clip:no-clip}
+/* 4px of slack on every side the ring and the ambient shadow need, and 20px on
+   the right for the sparkle the frame hangs over the card's edge */
+/* A column is a scroll container and a scroll container clips, the ambient
+   shadow of the reading in hand included. Modal/Primary casts 0 18px 48px,
+   which fades over about twenty pixels: measured against the environment
+   photograph, the shadow darkens the ground by 18 of 255 two pixels out, 13 at
+   twelve and 8 at twenty. On the sides with twenty pixels of gutter that fade
+   is all there; on the sides with four it read 18 at two pixels out and 0 at
+   four — a shadow ending in a straight line rather than fading.
+
+   So each column's BOX is widened outwards and its padding grows by the same
+   amount. The content box does not move: the first reading still stands at 84
+   and the second at 1296, which is where the frame puts them and what the suite
+   pins. The first column takes the eight pixels between the rail and the work
+   area, which is all there is before it would start painting over the rail; the
+   second takes the full twenty, and the assistant stands over the overflow. */
+.col-left{left:-8px;width:calc(var(--col-left-w) + 32px);align-items:center;
+  padding:var(--col-top) 20px var(--shelf-clear) 12px}
+/* the ring needs 4px on the outer edge, and the button — which turns inwards
+   here — needs 20px on the inner one, or the scroll box cuts it in half */
+.col-right{right:-24px;width:calc(var(--col-right-w) + 44px);align-items:flex-start;
+  padding:var(--col-top) 24px var(--shelf-clear) 20px}
+/* the second reading sits against the edge of the screen, so its button turns
+   inwards rather than hanging off it */
+.col-right .ask{right:auto;left:-11px}
+
+/* Every reading on the screen can be the one in hand. The picked card wears
+   the subject card's own treatment and carries the button that asks about it. */
+.card{position:relative;width:376px;flex:none;display:flex;flex-direction:column;gap:12px;padding:16px;
+  overflow:visible;cursor:pointer;transition:box-shadow .2s var(--ease),transform .2s var(--ease)}
+.card>*{overflow:hidden}
+/* ── one selection, and every dashboard wears it the same way ─────────────
+   Nothing is picked until something is picked: no reading starts the screen
+   already lit, and the button that asks the agent about a reading belongs to
+   the reading in hand, so it appears with the ring and goes away with it.
+   The wrapper carries the ring only where the material is on a child — the
+   subject card — and everywhere else the card itself does. */
+.pickable{cursor:pointer}
+.card:hover,.obj:hover,.summary-wrap:hover .summary{
+  box-shadow:var(--umbra),0 0 0 1px rgba(255,255,255,.09)}
+.card.is-picked,.obj.is-picked,.summary-wrap.is-picked .summary{
+  box-shadow:var(--modal)}
+/* the reading in hand trades the umbra's lit edge for the modal's, on the
+   layer that shows it */
+.card.is-picked::before,.summary-wrap.is-picked .summary::before{box-shadow:var(--modal-lit)}
+/* Transparent is not inert: the button kept its place in the tab order and
+   painted its focus ring at opacity 0, so tabbing through the screen stopped
+   ten times on nothing. `visibility` takes it out of the tab order and out of
+   the accessibility tree, and transitions as a discrete property — so it is
+   listed on the transition below, or the fade out becomes a disappearance. */
+.pickable .ask{opacity:0;visibility:hidden;transform:scale(.6);pointer-events:none}
+.pickable.is-picked .ask{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+/* the blur sits on the card, not on the material layer above it: a fading
+   card masks itself, and a mask takes the backdrop away from its children */
+.card{backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s))}
+.col-right .card{width:100%}
+.card--timeline{padding:16px 16px 20px}
+.card--pad8{padding:16px 8px}
+.card-label{width:100%;padding-bottom:12px;box-shadow:inset 0 -.5px 0 var(--border-primary);
+  font-size:14px;font-weight:500;line-height:16px;color:var(--fg-primary);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-label--bare{box-shadow:none;padding:0 8px 12px}
+.card-body{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.g4{width:100%;display:flex;flex-direction:column;gap:4px}
+.g8{gap:8px}
+.g16{gap:16px;align-items:flex-start}
+.g24{gap:24px}
+.subcard{width:100%;border-radius:12px;padding:16px;overflow:hidden}
+.pad8{padding:0 8px 8px}
+
+/* ── a measure: what to do, whose it is, by when, and what it changes ────── */
+.chip{align-self:flex-start;padding:2px 6px;border-radius:6px;font-size:11px;line-height:14px;
+  color:var(--control-fg-subtle);background:var(--control-bg-transparent-hover);
+  box-shadow:inset 0 0 0 1px var(--border-ghost)}
+/* the only class of measure that stops the same event happening in another
+   city is marked as such — three of the twenty-four carry it */
+.chip--wide{color:var(--gold-hi);background:rgba(229,169,76,.10);
+  box-shadow:inset 0 0 0 1px rgba(229,169,76,.35)}
+/* a number read at another month, or projected onto one, says so on its own
+   row — the header chip alone is not enough at the point of reading */
+.metric-when{width:100%;font-family:var(--font-mono);font-size:10px;line-height:14px;
+  color:var(--fg-inverse-tertiary)}
+.metric-when.is-proj{color:var(--gold-hi)}
+.mono-note{width:100%;font-family:var(--font-mono);font-size:10px;line-height:14px;
+  letter-spacing:.02em;color:var(--fg-inverse-tertiary)}
+/* the effect sentence is the only line in the record that says what changes,
+   so it is set apart. Ten of the twenty-four measures carry one; where the
+   author wrote none, nothing is drawn — a blank is honest, a dash is not. */
+.effect{width:100%;margin-top:2px;padding-left:8px;font-size:12px;line-height:15px;
+  color:var(--control-fg-subtle);border-left:1px solid var(--border-primary)}
+
+/* ── what the record does next, either way ──────────────────────────────── */
+/* the pair that walks the time strip to this month on that branch */
+.acts--split{gap:6px}
+.acts--split .btn{flex:1 1 0;min-width:0;white-space:nowrap;justify-content:center;padding-inline:8px}
+.outlook{width:100%;display:flex;flex-direction:column;gap:2px}
+.ol-row{display:grid;grid-template-columns:1fr auto auto;align-items:baseline;column-gap:8px;
+  padding:6px 0;border-bottom:1px solid var(--border-ghost)}
+.ol-row:last-child{border-bottom:0}
+/* text-overflow only bites on content that does not wrap, and this was left at
+   the default `normal` — so "With the action package · Sep 2027" took two lines
+   in its 113px track while its three neighbours took one, and the row being
+   baseline-aligned, the figure beside it stayed on the first line with 15px of
+   air under it. */
+.ol-k{font-size:12px;line-height:15px;color:var(--control-fg-subtle);min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ol-v{font-size:16px;font-weight:500;line-height:18px;color:var(--c,var(--fg-primary));font-variant-numeric:tabular-nums}
+.ol-b{font-family:var(--font-mono);font-size:10px;line-height:14px;color:var(--fg-inverse-tertiary);white-space:nowrap}
+.ol-row--act{background:linear-gradient(90deg,rgba(47,191,122,.10),transparent);
+  border-radius:6px;padding-inline:6px;margin-inline:-6px}
+.ol-row--gap .ol-v{font-size:13px;color:var(--control-fg-subtle)}
+.method{width:100%;font-size:11px;line-height:14px;color:var(--fg-inverse-tertiary)}
+.why{width:100%}
+.why summary{font-size:12px;line-height:15px;color:var(--control-fg-subtle);cursor:pointer;
+  padding:6px 0;list-style:none}
+.why summary::-webkit-details-marker{display:none}
+.why summary::before{content:"▸ ";color:var(--fg-inverse-tertiary)}
+.why[open] summary::before{content:"▾ "}
+.driver{display:flex;flex-direction:column;gap:3px;padding:8px 0;border-top:1px solid var(--border-ghost)}
+.driver .cap b{color:var(--gold-hi);font-weight:500}
+
+/* a decision filed in the journal is announced there, once */
+/* The announcement is a ring that fades, and it used to be animated on the
+   card's own box-shadow — which replaces the property outright. Measured 300ms
+   in, the card's computed shadow was the amber ring ALONE: for the whole 1.6s
+   the umbra's two lit edges and its hairline were gone and the journal card sat
+   there with no rim, which is the opposite of drawing attention to it. A picked
+   card lost the modal's ring the same way. The ring goes on a layer of its own
+   and fades on opacity, so the card keeps everything it was already wearing.
+   No z-index: the card's shadow passes under its children today, and an
+   ::after at auto keeps that — at z-index 2 the ring would newly cross over
+   the sparkle button hanging off the corner. */
+@keyframes flashcard{from{opacity:1}to{opacity:0}}
+.card.flash::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  box-shadow:0 0 0 2px rgba(229,169,76,.55);animation:flashcard 1.6s var(--ease) 1 forwards}
+.subcard::before{background:var(--mat-b05);backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s))}
+
+/* the timeline */
+.timeline{gap:20px;align-items:flex-start}
+.tl{display:flex;align-items:flex-start;gap:8px;width:100%;line-height:17px}
+/* A second rank, not a whisper. These three were set with opacity:.4, which
+   over the card's own ground measures 3.1–3.8:1 — under the 4.5:1 a 12px line
+   needs, and worst in the environment reading where the card is translucent
+   over a daylight photograph. .62 of the same ink measures 6.7:1 there and
+   7.6:1 over the void, and is still plainly the quieter rank.
+   Stated as a colour rather than an opacity so a figure set in bold inside one
+   of these lines is not dimmed twice — and so the row the timeline marks as
+   live can take its emphasis back, which an opacity of 1 could no longer say
+   once the rest of the rule stopped using opacity at all. */
+.tl-t{min-width:64px;flex:none;font-size:12px;font-weight:500;line-height:15px;
+  color:rgba(253,253,253,.62);white-space:nowrap}
+.tl.is-now .tl-t,.tl.is-wait .tl-t{color:var(--fg-primary)}
+.tl-x{flex:1;min-width:0;font-size:14px}
+.tl-stack{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
+.flag{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:500;line-height:17px;color:#ff5050;white-space:nowrap}
+.flag--now{color:var(--info)}
+
+/* the record: a two-column grid, so the value column lines up whatever the
+   label measures in whatever font actually loaded */
+.record{gap:8px;align-items:flex-start;font-size:12px;line-height:15px}
+.rec{display:grid;grid-template-columns:minmax(0,max-content) minmax(0,1fr);gap:16px;width:100%;align-items:start}
+.rec-k{color:rgba(253,253,253,.62)}
+.rec-k.tall{padding-bottom:14px}
+.rec-v{min-width:0}
+
+/* the metrics */
+.cap{width:100%;font-size:12px;line-height:14px;color:var(--fg-primary)}
+/* the same second rank, for the line under an action that names who took it */
+.rec-by{color:rgba(253,253,253,.62)}
+/* A second rank of body copy, not a footnote. At .4 it measured 3.5:1 against
+   its own card over the environment photograph and 3.8:1 over the planet —
+   under the 4.5:1 a 12px line needs to be read rather than glanced at. .55
+   measures 5.1–5.5:1 and is still plainly the quieter of the two ranks. The
+   mono meta lines below carry their own colour and are unaffected. */
+.cap.dim{color:rgba(253,253,253,.62)}
+.metric{width:100%;display:flex;flex-direction:column;gap:4px}
+.metric-k{width:100%;font-size:12px;line-height:15px}
+.metric-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;width:100%;font-weight:500}
+.metric-v{min-width:0;font-size:40px;line-height:1.05;letter-spacing:-1px;color:var(--c);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metric-t{flex:none;font-size:16px;line-height:19px;letter-spacing:-.256px;color:#fff;white-space:nowrap}
+/* A figure that is counting must not also be changing width. Every figure the
+   recount can pick up is set on tabular digits, so what moves is the number and
+   not the line it stands on — the forecast rows and an object's counts were
+   already on them, and these are the rest. */
+.metric-v,.metric-t,.obj-kpi b,.cap b{font-variant-numeric:tabular-nums}
+/* All three parts travel, and they travel together: the fill is the reading,
+   the hatched piece past it is the overshoot, and the tick is the target. A
+   panel written again puts each of them back where it was and lets go — see
+   live.js — so a bar that changes is seen to change rather than being redrawn
+   somewhere else. */
+.bar{position:relative;width:100%;height:4px;background:rgba(255,255,255,.1)}
+.bar i{position:absolute;left:0;top:0;height:4px;background:var(--c);
+  transition:width var(--live-run) var(--live-ease)}
+/* a lower-is-better bar draws the overshoot past its ceiling, not a longer fill */
+.bar s{position:absolute;top:0;height:4px;background:repeating-linear-gradient(135deg,var(--c) 0 3px,transparent 3px 6px);opacity:.9;
+  transition:left var(--live-run) var(--live-ease),width var(--live-run) var(--live-ease)}
+.bar u{position:absolute;bottom:1px;width:2px;height:6px;border-radius:1px;background:#fff;
+  transform:translateX(-1px);transition:left var(--live-run) var(--live-ease)}
+
+/* ═══ the subject in one paragraph ════════════════════════════════════════ */
+.summary-wrap{position:relative;width:384px;flex:none}
+.summary{position:relative;width:100%;display:flex;flex-direction:column;gap:12px;
+  padding:16px 16px 12px;border-radius:16px;overflow:hidden;
+  box-shadow:var(--umbra);transition:box-shadow .2s var(--ease)}
+.summary::before{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--mat-12);
+  box-shadow:var(--umbra-lit);pointer-events:none;z-index:0}
+.summary{backdrop-filter:blur(var(--blur-modal));-webkit-backdrop-filter:blur(var(--blur-modal))}
+.summary>*{position:relative;z-index:1}
+.summary-contents{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding-bottom:8px}
+.summary-body{width:100%;display:flex;flex-direction:column;font-size:16px;line-height:24px}
+.summary-body p+p{margin-top:24px}
+.summary-meta{width:100%;font-size:12px;line-height:15px}
+/* Anchored to the card's corner, not to a 384×350 card that no longer exists
+   once the card is resized on the stage. The frame puts a 20×20 button at
+   x 375 of a 384-wide card and 29 down from its top — nine pixels of it inside
+   the corner and eleven hanging off it. Figma 5276:158504. */
+.ask{position:absolute;right:-11px;top:29px;z-index:2;
+  display:flex;align-items:center;justify-content:center;width:20px;height:20px;
+  padding:2px;border-radius:6px;
+  background:var(--brand);transform-origin:center;
+  transition:transform .2s var(--ease),opacity .2s var(--ease),visibility .2s var(--ease)}
+.ask:hover{transform:scale(1.14)}
+.ask img{display:block}
+/* the sparkle turns while the agent is working on what was asked of it, and
+   the ring below says which reading it is working on */
+[data-thinking="on"] .is-asking .ask img{animation:spin 1.15s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── the sparkle, opened ─────────────────────────────────────────────────
+   A press on the sparkle is not a question yet: it is the place to put one.
+   The chip stays exactly where it was and the field grows out of it, away
+   from the edge it hangs off — leftwards over a reading in the first column,
+   rightwards over one in the second — so what was clicked is what is now
+   being typed in. Enter sends it, and so does the chip; Escape puts it away.
+   Seated by focus.js against the sparkle it belongs to. */
+.askbar{position:absolute;z-index:5;display:flex;align-items:center;gap:6px;
+  height:20px;pointer-events:auto}
+.askbar[hidden]{display:none}
+.askbar .ask{position:static;right:auto;top:auto;flex:none;opacity:1;visibility:visible;
+  pointer-events:auto;transform:none}
+/* The field floats over a reading, not inside a panel, so it takes the same
+   material every other floating chip on this screen wears — the tooltip, the
+   place name beside the clip, the scale bar. The assistant's own 8% white is
+   for a field standing on the assistant's dark ground; over a card it left the
+   paragraph underneath showing through the words being typed. */
+.askbar-in{flex:1;min-width:0;display:flex;align-items:center;gap:2px;height:32px;
+  padding:0 2px;border-radius:8px;background:var(--mat-over);
+  box-shadow:var(--umbra);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s));
+  transform-origin:right center;
+  animation:askopen .22s var(--ease) both}
+/* the second column's readings hang the sparkle off their left edge, so the
+   field opens the other way and grows from the other end */
+.askbar--left{flex-direction:row-reverse}
+.askbar--left .askbar-in{transform-origin:left center;animation-name:askopen-l}
+@keyframes askopen{from{opacity:0;transform:scaleX(.2)}to{opacity:1;transform:none}}
+@keyframes askopen-l{from{opacity:0;transform:scaleX(.2)}to{opacity:1;transform:none}}
+.askbar .btn28{flex:none;height:28px;width:28px;padding:6px;border-radius:6px;
+  color:var(--control-fg-subtle)}
+.askbar #askMic[aria-pressed="true"]{background:var(--brand);color:#fff}
+.askbar #askMic[aria-pressed="true"]:focus-visible{box-shadow:inset 0 0 0 2px var(--fg-primary)}
+/* The `font` shorthand needs a real family — `inherit` is not one, so
+   `font:400 13px/20px inherit` parsed to nothing and the field fell back to the
+   UA's own 13.333px Arial: the only text on this screen not in the page's
+   grotesque, and, being under 16px, the reason iOS Safari zooms the viewport
+   the moment the field takes focus and never zooms back out. Written long, the
+   family is inherited because nothing resets it. */
+.askbar-field{flex:1;min-width:0;height:28px;border:0;background:none;color:var(--fg-primary);
+  font-weight:400;font-size:13px;line-height:20px;padding:0 4px;outline:0}
+.askbar-field::placeholder{color:rgba(253,253,253,.35)}
+.askbar-in:has(.askbar-field:focus){box-shadow:var(--umbra),inset 0 0 0 1px var(--brand)}
+/* ── the reading the question was asked of ───────────────────────────────
+   Figma 5276:158502: a one-pixel ring in the brand colour, full strength down
+   the right and along the foot and falling away to a neutral through the left
+   and the top. Painted on a layer of its own through a padding-box mask, so
+   the card keeps its material, its glass and its own rim underneath it. */
+.pickable.is-asking > .summary::after,
+.card.is-asking::after,.obj.is-asking::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;padding:1px;
+  background:conic-gradient(from 0deg at 50% 50%,
+    #6f6f85 0deg,#7a7a9b 45deg,#7b79f2 90deg,#7d7bff 135deg,#7c7af8 165deg,
+    #6f6f92 195deg,#6c6c88 225deg,#5f6070 270deg,#66667a 315deg,#6f6f85 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+          mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:askring .28s var(--ease) both}
+@keyframes askring{from{opacity:0}to{opacity:1}}
+
+[data-layout="stage"] #summary{position:absolute;z-index:3}
+
+/* ═══ the dock: which signal, then when ═══════════════════════════════════
+   Two plates at the foot of the work area, side by side and equal, read left
+   to right. The ribbon is the choice of subject — the same shelf the frame
+   draws. The strip beside it is the scale of time that subject is read on:
+   left of NOW is the record the document holds, and moving the handle there
+   re-reads every figure on the screen at that month; right of it is the
+   projection on two branches. Both forecast lines are dotted, always — the
+   dot is the disclosure, and neither is ever allowed to draw itself as solid
+   as the record.
+
+   They wrap rather than squeeze: below the room for two readable plates the
+   ribbon takes the width and the strip drops under it. ════════════════════ */
+.dock{position:absolute;left:0;right:0;bottom:0;z-index:4;
+  display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--gap);pointer-events:none}
+.dock>*{pointer-events:auto}
+
+.signalbar,.timebar{flex:1 1 420px;min-width:0;border-radius:12px;overflow:hidden;
+  box-shadow:var(--spectrum)}
+.signalbar::before,.timebar::before{background:var(--mat-12);box-shadow:none;
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum))}
+
+.signalbar{padding:8px;display:flex;flex-direction:column;gap:8px}
+.signalbar-head{width:100%;display:flex;align-items:center;gap:8px;padding-left:8px}
+.signalbar-title{flex:1;min-width:0;font-size:14px;font-weight:500;line-height:20px}
+.timebar{padding:8px;display:flex;flex-direction:column;gap:4px}
+
+/* ---- the strip's head: which month, what it reads there, on which branch -- */
+.tl-chrome{display:flex;align-items:baseline;gap:8px;padding-left:8px;min-height:28px}
+.tl-month{flex:none;font-size:14px;font-weight:500;line-height:20px;white-space:nowrap}
+.tl-read{flex:1;min-width:0;padding-right:8px;text-align:right;
+  font-size:12px;font-weight:400;line-height:10px;color:var(--control-fg-subtle-active);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-read b{font-weight:400}
+.tl-sep{font-style:normal}
+.tl-sep[hidden]{display:none}
+/* the way back is not in the frame because the frame is drawn standing on NOW;
+   it is offered only once the handle has left it */
+.tl-now{flex:none;align-self:center;height:24px;min-width:0}
+.tl-now[hidden]{display:none}   /* .btn is inline-flex, and that outranks [hidden] */
+#tlBranches{flex:none}
+#tlBranches .seg-btn:disabled{opacity:.4;cursor:default}
+
+/* ---- the plot: one block, the scale in it and the months under it -------- */
+.tl-plot{position:relative;flex:none;display:flex;flex-direction:column;gap:8px;
+  padding:0 8px 8px;border-radius:4px 4px 10px 10px;background:var(--mat-05);overflow:hidden}
+/* the record's ground. It runs to the plate's own edge rather than to the
+   scale's, so the strip reads as lit up to NOW and unlit after it. */
+.tl-past{position:absolute;left:0;top:0;width:0;height:57px;
+  background:var(--mat-b05);border-top-left-radius:4px;pointer-events:none}
+
+.tl-track{position:relative;flex:none;height:57px;cursor:ew-resize;touch-action:none;
+  border-bottom:1px solid var(--border-ghost)}
+.tl-track:focus-visible{outline:none;box-shadow:0 0 0 1px var(--surface),0 0 0 2px var(--fg-primary)}
+.tl-track canvas{position:absolute;inset:0;display:block}
+.tl-layer{position:absolute;inset:0;pointer-events:none}
+.tl-layer>*{pointer-events:auto}
+
+/* the months are type, not pixels on a canvas: a real line under the scale,
+   set the way the frame sets it — eleven quarters spread edge to edge, so the
+   row is even and the two ends are flush with the scale they belong to */
+.tl-months{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  overflow:hidden;
+  height:14px;font-size:12px;font-weight:400;line-height:14px;color:var(--fg-primary);white-space:nowrap}
+.tl-months>span{flex:0 0 auto}
+
+/* where the handle is standing: the one upright the strip draws solid */
+.tl-handle{position:absolute;top:0;height:56px;width:2px;margin-left:-1px;
+  background:var(--fg-primary);pointer-events:none}
+
+/* A month the record turns worse in if nothing is done gets the whole height
+   of the scale and the diamond that caps it — an event on the strip, not a
+   dot on a line. The colour is the band it falls to. */
+.tl-risk{position:absolute;top:0;bottom:0;width:11px;margin-left:-5.5px;
+  background:none;border:0;padding:0}
+.tl-risk i{position:absolute;left:50%;top:0;bottom:0;width:1.5px;margin-left:-.75px;
+  background:var(--pin,var(--band-4));transition:width .16s var(--ease),margin-left .16s var(--ease)}
+.tl-risk i::before{content:"";position:absolute;left:50%;top:.9px;width:4.1px;height:4.1px;
+  margin-left:-2.05px;background:inherit;transform:rotate(45deg)}
+.tl-risk:hover i,.tl-risk:focus-visible i{width:2.5px;margin-left:-1.25px}
+
+/* every projected month is still somewhere to stand; the frame draws none of
+   them, so they are hit area until the pointer is on one */
+.tl-pt,.tl-mark{position:absolute;transform:translate(-50%,-50%);
+  display:grid;place-items:center;background:none;border:0;padding:0}
+.tl-pt{width:16px;height:16px}
+.tl-pt::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--fg-primary);
+  opacity:0;transition:opacity .16s var(--ease)}
+.tl-pt:hover::after,.tl-pt:focus-visible::after{opacity:1}
+/* what the record itself put on the past — the frame's own diamond, 6.93 across */
+.tl-mark{width:18px;height:18px}
+.tl-mark::after{content:"";width:4.9px;height:4.9px;background:var(--fg-primary);
+  transform:rotate(45deg);transition:transform .16s var(--ease)}
+.tl-mark:hover::after,.tl-mark:focus-visible::after{transform:rotate(45deg) scale(1.5)}
+
+/* ═══ the signals ribbon ══════════════════════════════════════════════════ */
+.signals{width:100%;display:flex;align-items:stretch;gap:8px;padding:2px;margin:-2px;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;scroll-behavior:smooth;overscroll-behavior-x:contain;
+  /* the ribbon dissolves at whichever end it can still be scrolled towards,
+     so a card cut by the plate's edge reads as "there is more", not as a
+     rendering fault. Both classes are set from the scroll position. */
+  --sig-l:transparent 0,#000 0;--sig-r:#000 100%,#000 100%;
+  mask-image:linear-gradient(90deg,var(--sig-l),var(--sig-r))}
+.signals.can-back{--sig-l:transparent 0,#000 28px}
+.signals.can-on{--sig-r:#000 calc(100% - 28px),transparent 100%}
+.signals::-webkit-scrollbar{height:0}
+/* The frame gives the chosen card the filled ground and the hug width, and
+   the ones still on offer the outline and the room: 247.816 is exactly a
+   thumbnail, a gap and a title column, and 295.816 is that with the slack. */
+.sig{flex:none;width:295.816px;display:flex;align-items:flex-start;gap:8px;padding:8px;border-radius:8px;
+  border:1px solid var(--border-ghost);overflow:hidden;text-align:left;
+  transition:background .16s var(--ease),border-color .16s var(--ease),width .22s var(--ease)}
+.sig:hover{background:var(--control-bg-transparent-hover)}
+.sig.is-on{width:247.816px;border-color:transparent;background:var(--mat-05);background-clip:padding-box}
+.sig--bare{width:193.816px;padding:8px 16px}
+.sig--bare.is-on{width:191.816px}
+.sig-thumb{flex:none;width:64px;height:64px;border-radius:4px;overflow:hidden;position:relative;
+  background:var(--control-bg-transparent-hover)}
+.sig-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
+.sig-thumb img.fit-2{inset:auto;left:-17.69%;top:-21.47%;width:128.7%;height:141.92%}
+.sig-thumb img.fit-globe{inset:auto;left:-45.89%;top:-45.89%;width:191.77%;height:191.77%}
+.sig-text{flex:none;width:159.816px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding-top:6px;align-self:stretch}
+.sig-title{width:100%;max-height:34.4px;overflow:hidden;overflow-wrap:anywhere;
+  font-size:14px;font-weight:500;line-height:17.2px;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.sig-meta{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;line-height:15px;
+  white-space:nowrap;max-width:100%;color:rgba(253,253,253,.4)}
+.sig-meta b{font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.sig-meta .dot{margin-top:2px}
+
+/* ═══ the assistant ═══════════════════════════════════════════════════════ */
+.assistant{display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.assistant::before{backdrop-filter:blur(var(--blur-xl));-webkit-backdrop-filter:blur(var(--blur-xl))}
+.assistant-glow{position:absolute;left:-105px;bottom:-30px;width:561px;height:151px;
+  transform:scaleX(-1);pointer-events:none;z-index:0;opacity:0;
+  transition:opacity .45s var(--ease)}
+[data-voice="listening"] .assistant-glow,
+[data-voice="hearing"] .assistant-glow,
+[data-voice="thinking"] .assistant-glow,
+[data-voice="speaking"] .assistant-glow{opacity:.95}
+.assistant-glow img{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+
+/* Blur/Window. The head does lay a second coat of glass over the panel's own,
+   shallower than it — but only the tint: the surface underneath is already the
+   panel's, and stating it twice only doubles the black. */
+.assistant-head{width:100%;flex:none;display:flex;align-items:center;gap:8px;padding:8px;
+  background:linear-gradient(0deg,var(--on-surface-primary) 0%,var(--on-surface-primary) 100%);
+  backdrop-filter:blur(var(--blur-window));-webkit-backdrop-filter:blur(var(--blur-window));
+  border-bottom:1px solid var(--border-primary)}
+.assistant-title{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;
+  border-radius:8px;padding:4px 8px;transition:background .12s ease}
+.assistant-title:hover{background:var(--control-bg-transparent-hover)}
+.assistant-title::before{content:"";width:16px;height:16px;flex:none}
+.assistant-title span{font-size:16px;font-weight:500;line-height:16px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.assistant-title .caret{color:#9e9e9e;flex:none;transition:transform .18s var(--ease)}
+.assistant-title::after{content:"";width:6px;height:6px;flex:none;border-radius:50%;
+  background:var(--control-fg-subtle);opacity:.3}
+[data-agent="live"] .assistant-title::after{background:var(--good);opacity:1;
+  box-shadow:0 0 8px color-mix(in srgb,var(--good) 60%,transparent)}
+.assistant-title[aria-expanded="true"] .caret{transform:rotate(180deg)}
+
+.assistant-body{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:flex-start;
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain}
+.assistant-body::-webkit-scrollbar{width:0}
+.msg{animation:rise .28s var(--ease) both}
+.msg-tag{font-size:12px;line-height:15px;opacity:.45}
+.msg-user .msg-tag{margin-top:4px}
+/* the demo says so where it is happening, not only on the reply — and it says
+   which half of the scenario is the demo: with a microphone open the wave is
+   the room's own voice, and only the words were never spoken */
+.heard::after{content:""}
+[data-demo="on"] .heard::after{content:" · demo, no microphone";opacity:.45}
+[data-demo="on"][data-mic="live"] .heard::after{content:" · demo, nothing transcribed"}
+/* The reply being read back says nothing here: the words are already on screen
+   in the reply itself, and the line is the room's, not the agent's. Whose
+   voice it is stands on the speaker that started it. */
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.msg-user{width:100%;flex:none;display:flex;flex-direction:column;align-items:flex-end;padding:16px 8px 8px 16px}
+.msg-user p{max-width:266px;padding:8px 12px;border-radius:16px;background:var(--mat-10);
+  box-shadow:var(--spectrum);backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum));
+  font-size:14px;line-height:20px;color:var(--control-fg-subtle)}
+.msg-agent{width:100%;flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px}
+.agent-name{display:flex;align-items:center;gap:4px}
+.agent-name img{display:block}
+.agent-name span{font-size:14px;font-weight:500;line-height:20px}
+.msg-agent>p{width:100%;font-size:14px;line-height:20px;white-space:pre-wrap}
+.agent-acts{display:flex;align-items:center;gap:2px;color:var(--control-fg-subtle)}
+.agent-acts .btn-ghost.is-on{color:var(--fg-primary)}
+/* the reply's own speaker takes the same ink a vote takes when it is on, and
+   nothing more: axsi.svg marks the agent's words and may not mark the sound */
+[data-speak="off"] .agent-acts .speak,
+[data-speak="blocked"] .agent-acts .speak{opacity:.5}
+.msg-live{flex:1 0 auto;min-height:0;width:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;padding:16px}
+/* nothing is being said, so there is nothing here: not the line, and not the
+   room around it either */
+.msg-live:has(p:empty){padding:0}
+.msg-live p:empty{display:none}
+/* In conversation the live line reads as being spoken: a light travels along
+   the words rather than the block simply sitting there. */
+.msg-live p{font-size:14px;line-height:20px;text-align:center;color:rgba(255,255,255,.8)}
+[data-voice="listening"] .msg-live p,
+[data-voice="hearing"] .msg-live p,
+[data-voice="speaking"] .msg-live p,
+[data-voice="thinking"] .msg-live p{
+  color:transparent;
+  background-image:linear-gradient(100deg,
+    rgba(255,255,255,.34) 0%, rgba(255,255,255,.34) 34%,
+    #d5d4ff 44%, #fdfdfd 50%, #a8b8ff 56%,
+    rgba(255,255,255,.34) 66%, rgba(255,255,255,.34) 100%);
+  background-size:280% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  animation:shimmer 2.6s linear infinite}
+@keyframes shimmer{from{background-position:180% 0}to{background-position:-80% 0}}
+.thinking{display:inline-flex;gap:4px;align-items:center;height:20px}
+.thinking i{width:5px;height:5px;border-radius:50%;background:var(--control-fg-subtle);opacity:.4;
+  animation:blink 1.1s var(--ease) infinite}
+.thinking i:nth-child(2){animation-delay:.16s}
+.thinking i:nth-child(3){animation-delay:.32s}
+@keyframes blink{0%,100%{opacity:.25;transform:translateY(0)}45%{opacity:.9;transform:translateY(-2px)}}
+
+.assistant-input{width:100%;flex:none;display:flex;align-items:center;gap:4px;padding:8px}
+.input{flex:1;min-width:0;display:flex;align-items:center;border-radius:8px;background:var(--assistant-input);
+  transition:box-shadow .16s var(--ease)}
+/* The waveform is given the room the bar has left, not the width of the bar:
+   it stands after the microphone and before the send key, and 100% of the bar
+   would push both of those out through its right edge. */
+.wave{flex:0 1 auto;width:100%;min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:3px;
+  padding:6px 0;overflow:hidden}
+.wave i{width:2px;border-radius:1000px;background:var(--fg-primary);flex:none;
+  transform-origin:center;transition:transform .16s var(--ease)}
+/* the same invalid shorthand as .askbar-field, and the same repair */
+.ask-field{flex:1;min-width:0;height:36px;border:0;background:none;color:var(--fg-primary);
+  font-weight:400;font-size:14px;line-height:20px;padding:0 4px;outline:0}
+.ask-field::placeholder{color:rgba(253,253,253,.35)}
+/* The bar carries only the half of the scenario that belongs to it: the
+   waveform for as long as there is a voice on the row — the room's, or the
+   agent's reading its answer back — and the field at every other moment,
+   because a bar with nothing to show is a bar you can type in. The words
+   themselves are read at the foot of the thread, and the line that carries
+   them is hidden by being empty. */
+[data-voice="idle"] .wave,[data-voice="heard"] .wave,[data-voice="thinking"] .wave{display:none}
+[data-voice="listening"] .ask-field,[data-voice="hearing"] .ask-field,
+[data-voice="speaking"] .ask-field{display:none}
+#mic[aria-pressed="true"]{background:var(--brand);color:#fff}
+/* the shared inset ring is the brand colour, and while it is listening so is
+   this button's own ground — 1.00:1. A control standing on the brand takes the
+   opposite ink: #fdfdfd on #7d7bff is 3.36:1, past the 3:1 a ring needs. */
+#mic[aria-pressed="true"]:focus-visible{box-shadow:inset 0 0 0 2px var(--fg-primary)}
+
+/* ═══ the room it is given ════════════════════════════════════════════════
+   The design is drawn at 1920×1080. Above that the stage grows and the panels
+   keep their width; below it the panels stand down in the order they can be
+   spared — the second reading first, then the assistant — and the first
+   reading becomes the whole screen rather than disappearing. ═══════════════ */
+@media (max-width:1420px){
+  .col-right{display:none}
+  .stage-free{right:0}
+  .scene-note{right:calc(var(--assistant-w) + 2 * var(--gap))}
+}
+/* The assistant used to hold on to 1120, and the two dock plates need
+   420 + 8 + 420 = 848 of a work area that is only (W − 442) wide while it is
+   up. So between 1121 and 1289 the dock wrapped to a second row — measured at
+   height 900: 135px of dock at W=1290, 277px at W=1289, and 135px again at
+   W=1120 once the assistant went. A window made WIDER got a taller dock and
+   142px less stage. The assistant now stands down at the width where the dock
+   would otherwise break, and focus.js holds the same number — see ASSISTANT_MIN
+   there; the two must move together, or the panel is hidden while the screen
+   still believes there is somewhere to write an answer. */
+@media (max-width:1289px){
+  .assistant{display:none}
+  .scene-note{right:var(--gap)}
+}
+@media (max-width:860px){
+  .stage-free{left:0}
+  /* .scene-note is told z-index:6 below so it sits over the one column — but it
+     lives inside .backdrop, and a positioned element with z-index:0 is a
+     stacking context, so the 6 was clamped inside a layer already under the
+     shell's 2 and the caption stayed behind the column. Released here only:
+     with z-index auto the photograph still paints in tree order after #world,
+     and .shell keeps everything else above it. */
+  .backdrop{z-index:auto}
+  /* one column fills the work area here, so the caption sits over it rather
+     than behind it, and lets the pointer through to the reading underneath */
+  .scene-note{left:var(--gap);right:var(--gap);z-index:6;pointer-events:none;
+    bottom:calc(var(--shelf-clear) + 8px)}
+  /* One column and a stage cannot be stacked here. .stage stays absolute over
+     the whole work area at z-index 0 while the column is an in-flow box at 2,
+     so the two readings that OWN the stage — the clip and the objects grid —
+     were painted underneath it: at 820×900 elementFromPoint over the clip's
+     own top edge returned the subject card. For those two the stage is the
+     screen, and the column stands down. The dock then has to hold the foot on
+     its own, because .col-left{flex:1} was the only thing pushing it there. */
+  [data-lens="media"] .stage,[data-lens="objects"] .stage{z-index:3}
+  [data-lens="media"] .col-left,[data-lens="objects"] .col-left{display:none}
+  .dock{margin-top:auto}
+  /* The breadcrumb is absolutely centred on the work area at z-index 5, and so
+     is the header row it now shares that line with — and the header comes
+     later in the DOM, so the bar was buried under the title outright. In the
+     flow it is simply the row above. */
+  .scale-bar{position:relative;left:auto;transform:none;
+    align-self:center;flex:none;max-width:100%}
+  /* one column and a stage is not enough room for a floating card: the second
+     arrangement falls back to the first rather than covering the reading */
+  [data-layout="stage"] #summary{position:static!important;z-index:auto;
+    width:100%!important;left:auto!important;top:auto!important}
+  .work{display:flex;flex-direction:column;gap:8px}
+  .headers{display:flex;gap:8px;flex:none;align-items:flex-start;position:relative;z-index:5}
+  /* Relative rather than static, and the difference is not cosmetic. Every
+     panel's material is a .panel::before with inset:0, and an absolutely
+     positioned pseudo-element resolves its inset against the nearest
+     POSITIONED ancestor. Made static, these two stopped being that ancestor
+     and .headers became it — so each of their glass layers was painted over
+     the whole header row instead of over its own panel. Nothing showed it
+     while the row held only these two, because the veil covered exactly what
+     it was meant to; the moment anything else stood in that row it was behind
+     two stacked rgba(0,0,0,.8) sheets and read at about a tenth of its
+     contrast. Relative keeps them in the flow and keeps the material on the
+     box it belongs to. */
+  .title{position:relative;left:auto;top:auto;flex:1;min-width:0;width:auto}
+  .tools{position:relative;left:auto;top:auto;right:auto;flex:none}
+  /* nothing is layered over the column here — the header and the dock are no
+     longer above it, so it is simply a box in the flow that scrolls */
+  .col-left{position:relative;top:auto;bottom:auto;left:auto;right:auto;width:auto;
+    flex:1;min-height:0;align-items:stretch;padding:4px 20px 8px 4px}
+  .col-left .card,.col-left .summary-wrap{width:100%}
+  .dock{position:relative;left:auto;right:auto;bottom:auto;flex:none}
+}
+/* A short window cannot afford both plates at full height, and the ribbon is
+   the one that can be read at a glance from less: the thumbnails come down,
+   the strip keeps enough room to still be a scale. */
+@media (max-height:820px){
+  .sig{width:248px;padding:6px}
+  .sig.is-on{width:208px}
+  .sig--bare{width:170px;padding:6px 14px}
+  .sig--bare.is-on{width:168px}
+  .sig-thumb{width:48px;height:48px}
+  .sig-text{width:140px;padding-top:2px}
+  .sig-title{max-height:34.4px;-webkit-line-clamp:2}
+}
+@media (max-width:560px){
+  .cta-listen span{display:none}
+  .cta-listen{min-width:36px;padding:8px}
+  #tlBranches,.signalbar-title{display:none}
+}
+
+/* ═══ the dock, paged ═════════════════════════════════════════════════════
+   The two plates are flex:1 1 420px in a wrapping dock, so they need
+   420 + 8 + 420 = 848 of work area and stack below it. Stacking is what makes
+   the dock 277px tall — a third of a phone screen, two thirds of a landscape
+   one — and it is also a step rather than a slope: measured at height 900, a
+   931px window gets a 277px dock and a 933px window gets 135px, so a window
+   made two pixels WIDER got 142px more stage.
+
+   Below the width where they fit side by side they stop stacking and start
+   paging: one plate at a time, in the order the dock is read — which signal,
+   then when — with 24px of the next one showing so the strip is visibly
+   somewhere rather than gone. Four declarations and no JavaScript;
+   --shelf-clear picks the new height up on its own, because focus.js measures
+   the dock rather than restating it.
+
+   948 is 932 (the widest phone in landscape) plus the shell's two insets,
+   which is also where the file's own 848 arithmetic stops fitting. */
+@media (max-width:948px){
+  .dock{flex-wrap:nowrap;align-items:stretch;overflow-x:auto;scrollbar-width:none;
+    scroll-snap-type:x mandatory;overscroll-behavior-x:contain}
+  .dock::-webkit-scrollbar{height:0}
+  .signalbar,.timebar{flex:0 0 calc(100% - 24px);scroll-snap-align:start}
+}
+
+/* The pane strip exists only where one face is shown at a time; at the frame's
+   width the four faces are side by side and the strip has nothing to say. */
+.pane-strip{display:none}
+
+/* ═══ the phone ═══════════════════════════════════════════════════════════
+   A phone holds one thing at a time. The desktop reads left to right as four
+   things about one subject — what happened, the reading, the slice that
+   allowed it, the thread — laid out side by side because 1920px can hold them
+   side by side; 390px cannot, so the same four become four faces and a strip
+   says which one is up.
+
+   The mechanism is the one the page already has. `data-lens` on #app decides
+   which reading the stage draws; `data-pane` decides which face the work area
+   shows, and both are read only in here — a desktop never sees a pane rule
+   whatever the attribute says. Nothing scrolls that did not scroll before and
+   nothing is translated: #world is position:fixed with touch-action:none
+   across the whole viewport, and .pins is fixed beside it, so a page that
+   scrolled or swiped as a whole would either lose the gesture to the canvas or
+   drag six pins across a paragraph. The screen stays the fixed frame it is on
+   the desktop, folded.
+
+   The composition at 390×844, and the arithmetic is the whole design:
+
+     8    the shell's inset, plus the safe area
+     52   the head — the case, and the one button that asks about it
+     8    the gap
+     44   the pane strip
+     8    the gap
+     581  the face  ← the only flexible region, so every difference lands here
+     8    the gap
+     127  the dock, paged
+     8    the shell's inset, plus the safe area
+     ---
+     844
+
+   The face is 70% of the work area, against the 57% the reading gets today and
+   the 5% it gets in landscape. ═══════════════════════════════════════════ */
+@media (max-width:600px),(max-width:1000px) and (max-height:500px){
+
+  /* html,body{height:100%} sizes to the LARGE viewport, so the foot of a fixed
+     inset:0 shell sits behind the URL bar until it is scrolled away — and this
+     page never scrolls, so it never is. dvh is the viewport as it stands. */
+  .app{bottom:auto;height:100dvh}
+  /* nothing in this file read a safe area before: the home indicator lies
+     exactly where the dock is pinned, and a landscape notch across the rail's
+     old column. viewport-fit=cover in focus.html is what makes these non-zero */
+  .shell{inset:var(--gap);
+    padding:max(0px,calc(env(safe-area-inset-top) - var(--gap)))
+            max(0px,calc(env(safe-area-inset-right) - var(--gap)))
+            max(0px,calc(env(safe-area-inset-bottom) - var(--gap)))
+            max(0px,calc(env(safe-area-inset-left) - var(--gap)))}
+
+  /* 60px of rail and its 8px gap is 17.4% of a 390px screen, for a logo, four
+     nav buttons that go nowhere in this build (README §3: the master dashboard
+     is on the product stack and these are entry stubs), a fold button and an
+     avatar. Folding it by hand buys 24px back, because .rail-peek is a 36px
+     flex item in the same row. On a phone it goes outright, and focus.js
+     derives state.rail here the way it already derives state.layout. */
+  .rail,.rail-peek{display:none}
+
+  /* ---- the head: the case gets the row -------------------------------- */
+  /* .tools is a hard 172px at every phone width and takes it first, which is
+     why the title measured 46px and read "Taif…" over "Recr…". Two of its
+     three seg buttons are inert — nothing in focus.js binds Cards or Grid —
+     and the third is the assistant toggle, which is a pane tab here. So the
+     group goes and the title gets what it was holding. */
+  .tools .seg{display:none}
+  /* And the subject arrows go with them. They step the shelf one signal at a
+     time, which is what the ribbon in the dock does with 296px cards a thumb
+     can actually hit — two 44px buttons for the same job cost 92px of a row
+     the case's own name is being squeezed out of. The head budget at 390:
+     374 of shell, less 52 for .tools and 8 for the gap, is 314 of .title; less
+     16 of its padding is 298 for the name — against the 46px it gets today,
+     and against the 50px it would get with the arrows kept and #timeChip up. */
+  .nav-pair{display:none}
+  .title-1,.title-2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* the chip is the second disclosure that a figure was read at another month,
+     and on this row it is the widest thing there is: it takes what it needs
+     from the name rather than pushing it off the panel */
+  #timeChip{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* ---- the pane strip: which of the four faces ------------------------- */
+  /* built by focus.js into .headers, and a .seg-slide like every other choice
+     on this screen, so seg.js carries the same chip across it */
+  /* The strip is the second row of the head rather than a box of its own in
+     .work: the head is already the one wrapper both panels share, and a fourth
+     in-flow child of .work would have to be ordered against .dock, which
+     carries no order and would take 0 — measured, that put the dock above the
+     head. Inside .headers it simply wraps, and the head becomes 52 + 8 + 44. */
+  .headers{flex-wrap:wrap;row-gap:8px}
+  .pane-strip{display:flex;flex:1 0 100%}
+  /* sized to their own labels rather than to a quarter each: equal quarters
+     are 89.5px at 390 and the longest name needs 97, so all four would wear an
+     ellipsis to make room for the two that had it spare. The four measure
+     249px of text in 358 of strip, and the slack is shared. */
+  .pane-strip .seg-btn{flex:1 1 auto;min-width:0;padding:12px 6px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* a face the case cannot fill is off the strip rather than dead on it — the
+     same rule the readings already follow */
+  .pane-strip .seg-btn[hidden]{display:none}
+
+  /* ---- the four faces --------------------------------------------------- */
+  /* Each is the work area between the strip and the dock. The reading needs no
+     box of its own: the stage is already absolute over the whole work area, so
+     showing it is a matter of standing the columns down and letting .dock's
+     margin-top:auto hold the foot — which is the rule the 860 block already
+     put there. */
+  .col-left,.col-right{display:none}
+  [data-pane="what"] .col-left,[data-pane="slice"] .col-right{
+    display:flex;position:relative;top:auto;bottom:auto;left:auto;right:auto;
+    width:auto;flex:1 1 auto;min-height:0;align-items:stretch;
+    padding:4px 20px 8px 4px}
+  [data-pane="what"] .col-left .card,[data-pane="what"] .col-left .summary-wrap,
+  [data-pane="slice"] .col-right .card{width:100%}
+  /* the second column is display:none from 1420 down, so on every phone the
+     measures, their Commit buttons and the forecast — the argument the README
+     calls the point of the screen — are rendered, animated into, and never
+     seen. Here it is a face of its own. */
+  [data-pane="slice"] .col-right{padding:4px 4px 8px 20px}
+
+  /* The readings stay on the ribbon's own head row, which is where the frame
+     draws them and what the README's order describes — which signal, which
+     reading, then when. They were nearly floated over the stage instead, which
+     cannot be done from here: #lensTabs is a child of .signalbar-head, and an
+     absolutely-positioned child of a display:none parent is not laid out at
+     all. Reparenting it on a breakpoint would be the only way, and the row it
+     would leave is the row it already belongs to. It costs the dock the 44px
+     the tabs grow to on a coarse pointer, which the ribbon page absorbs. */
+  .signalbar-head{padding-left:0}
+  #lensTabs{flex:1;overflow-x:auto;scrollbar-width:none}
+  #lensTabs::-webkit-scrollbar{height:0}
+
+  /* Where a face covers the planet the pins go behind it — still lit, still
+     marking the place, no longer sitting on a card's face. The same decision
+     the clip and the objects grid already carry at the top of this file,
+     restated for the two column faces. */
+  :where([data-pane="what"],[data-pane="slice"]) .pins{z-index:1}
+  :where([data-pane="what"],[data-pane="slice"]) .pin:not(.is-on){opacity:.35}
+
+  /* ---- the thread ------------------------------------------------------- */
+  /* The assistant is a sibling of .work inside .shell, so on a phone it is
+     simply laid over the same room the other three faces stand in — from under
+     the strip to the foot, which is 716px of thread against the 350px-wide
+     column it cannot be here. It covers the dock: a conversation is not the
+     moment to be choosing another subject, and the strip above it is the way
+     out. The reading it was asked of is one tap away rather than beside it —
+     the one thing a 390px screen cannot hold, and it is the pane strip that
+     carries which face the question came from. */
+  .assistant{position:absolute;left:0;right:0;bottom:0;top:calc(52px + 8px + 44px + 8px);
+    width:auto;z-index:8}
+  :where(:not([data-pane="agent"])) .assistant{display:none}
+  [data-pane="agent"] .assistant{display:flex}
+  [data-pane="agent"] .dock{visibility:hidden}
+  .msg-user p{max-width:min(266px,78%)}
+
+  /* ---- the stage, in the room the phone leaves ------------------------- */
+  /* the caption was width:max-content, so max-width won and left/right never
+     bound: measured 390 wide at left:8 on a 390 screen, 8px off the edge at
+     every phone width. Content-sized in a box that is narrower than its
+     content is not a width. */
+  .scene-note{width:auto;max-width:none}
+  /* the breadcrumb clips from the right, which is the end carrying the crumb
+     that says where the planet is pointed — measured 139.5px past the bar's
+     own edge on a five-crumb chain. It scrolls instead, and focus.js keeps the
+     last crumb in view. */
+  .scale-bar{overflow-x:auto;scrollbar-width:none;justify-content:flex-start}
+  .scale-bar::-webkit-scrollbar{height:0}
+
+  /* ---- the dock --------------------------------------------------------- */
+  /* the strip's chrome wraps rather than truncates: at 390 the month title,
+     the readout and the branch name cannot share one 358px line, and the
+     readout is the half that carries the figure. */
+  .tl-chrome{flex-wrap:wrap;row-gap:2px}
+  .tl-read{flex:1 0 100%;text-align:left;padding-right:0}
+}
+
+/* ═══ landscape ═══════════════════════════════════════════════════════════
+   390px of height is the tightest room this layout is ever given. The head and
+   the strip hold — they are how the screen is steered — and everything that
+   can be read from the other orientation stands down: the dock keeps its plot
+   and loses its chrome line, because #timeChip in the head already prints the
+   month and the branch and timeline.js drives the two together. ═══════════ */
+@media (max-width:1000px) and (max-height:500px){
+  .gen-header{height:44px}
+  .assistant{top:calc(44px + 8px + 44px + 8px)}
+  .tl-chrome{display:none}
+  .sig-title{-webkit-line-clamp:2}
+}
+
+/* ═══ a screen with no cursor on it ═══════════════════════════════════════
+   Two questions, and they are not the same one. `pointer:coarse` asks how big
+   a target has to be; `hover:none` asks whether an affordance can ever fire at
+   all. Apple's HIG says 44pt, Android's 48dp; 44 is the floor used here, and
+   it is reached by growing the HIT BOX and never the ink — every one of these
+   is a pseudo-element inset outwards, so the measured shadow gutter at the top
+   of the two-column section (18/255 two pixels out, a straight edge at four,
+   hence 20px) and the sparkle's own -11px overhang survive untouched, and no
+   card, column or chip has to be re-measured. ════════════════════════════ */
+@media (pointer:coarse){
+  /* a field under 16px is a field iOS Safari zooms the viewport for, and it
+     never zooms back; the design's 13 and 14 are a mouse's numbers */
+  .askbar-field,.ask-field{font-size:16px}
+  .btn28{width:44px;height:44px;padding:0}
+  .btn36,.cta-listen{min-height:44px;min-width:44px}
+  .seg-btn{min-height:44px}
+  .seg-text .seg-btn{padding:12px 10px}
+  /* the ink stays 20×20 and the ring stays where it was drawn */
+  .ask::before{content:"";position:absolute;inset:-12px;border-radius:50%}
+  .tl-mark,.tl-risk{position:relative}
+  .tl-mark::before,.tl-risk::before{content:"";position:absolute;inset:-13px}
+  /* The six pins are the exception, and they keep their 14px. Both of a pin's
+     pseudo-elements are already spoken for — ::before is the fanned pin's
+     thread back to where it really is and the edge marker's arrow, ::after is
+     the open case's ping — so a hit pad would have to come out of the box
+     itself, and the box is what globe.js centres with translate(x-7,y-7),
+     what .is-on::after rings at inset:-5, and what the harness holds 20px
+     apart from its neighbour (focus.spec.ts, no two pins within 20px). A 44px
+     box would overlap its neighbour's at the register's own 26px separation,
+     so the wrong case would open. A pin stays a small target on a map; the
+     ribbon is how a case is chosen with a thumb, and its cards are 296px. */
+}
+
+/* ═══ while the camera is moving ══════════════════════════════════════════
+   Every panel on this screen is glass: fourteen backdrop filters, three of
+   them the spectrum's 256px — two across the full width of the dock. The compositor re-rasterises
+   each one on every frame in which the pixels underneath it change — which is
+   every single frame of a zoom. That is what made the wheel feel like a
+   slideshow rather than a gesture: the easing was never the cost, the glass
+   was.
+
+   The renderer already announces camera movement on <body> and clears it 180ms
+   after the camera stops. While it is set, the blurs step aside and the
+   materials fall back to the flat colour underneath them — which is black at
+   80%, so nothing becomes unreadable. Nobody reads a blurred periphery
+   mid-gesture anyway. Same trade for the moment a projection changes. */
+/* every panel's glass is on a ::before, and `*` does not match a pseudo */
+body[data-cam="move"] *,body[data-cam="move"] *::before,body[data-cam="move"] *::after,
+body.handover *,body.handover *::before,body.handover *::after{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+/* ═══ a screen that cannot draw half a pixel ══════════════════════════════
+   Almost everything in this file that separates one surface from another is a
+   hairline: the umbra's two lit edges, the spectrum's ring, the modal's
+   near-white rim, and a scattering of `0 0 0 .5px` on top of those. On a
+   retina panel each of them lands on a device pixel and reads as a drawn
+   line. At 1x — and at the 1.25x and 1.5x a Windows desktop is usually scaled
+   to — there is no half pixel to land on, so the compositor spreads each one
+   across a whole pixel at half strength. Not a line: a grey smear, and every
+   panel edge goes soft exactly where it was drawn to be crisp. Six of them
+   stacked around one card is what makes a 1x screen look muddy.
+
+   So below 2x the screen wears FEWER strokes rather than blurrier ones. The
+   decorative rims — the glass lit edges, the spectrum's ring, the ambient
+   half-pixel outlines — come off outright; the material and the shadow carry
+   the separation on their own. The strokes that say something — the ring on
+   the reading in hand, the rule under a card's label, a focus ring — are
+   snapped to one solid pixel and given the alpha they lose by no longer
+   sitting between two.
+
+   Two syntaxes for one question: Safari answered -webkit-max-device-pixel-ratio
+   for years before it answered `resolution`, and a browser that understands
+   neither falls through to the retina rules, which is the safe way round. */
+@media (-webkit-max-device-pixel-ratio:1.5),(max-resolution:1.5dppx){
+  :root{
+    /* one crisp top edge in place of two half-pixel smears */
+    --umbra-lit:inset 0 1px 0 0 rgba(255,255,255,.09);
+    /* and the outer half-pixel ring of --surface goes: it was a dark halo on
+       a dark ground, and at 1x that is all it reads as */
+    --umbra:var(--umbra-lit);
+    --spectrum:none;
+    --modal-lit:inset 0 1px 0 0 rgba(255,255,255,.12);
+    /* the reading in hand still has to be the one with a ring round it, so
+       this is the one stroke that is promoted rather than dropped */
+    --modal:0 0 0 1px rgba(219,219,219,.55),0 18px 48px rgba(0,0,0,.25),var(--modal-lit);
+    /* the map's own outline, read by mapview.js: a whole pixel, and darker to
+       make up what it loses by no longer straddling two */
+    --region-stroke-width:1;
+    --region-stroke-alpha:0.62;
+    /* The reflection on a rim is not in this list, and does not need to be: it
+       is already one whole pixel, so it has nothing to lose here, and it
+       belongs with the strokes that say something rather than with the ones
+       that only separate. It gains from the trade if anything — with the glass
+       lit edges off, the one stroke left on a panel edge at 1x is the one
+       carrying a colour. */
+  /* Subpixel antialiasing is the whole reason a 1x panel renders 12px type
+     legibly. `antialiased` throws it away for a thinner, greyer glyph, and
+     `geometricPrecision` throws the hinting away with it — both are a retina
+     trade, and on a 1x screen both are a loss. */
+  body{-webkit-font-smoothing:auto;text-rendering:optimizeLegibility}
+
+  /* ---- the rules that state a hairline themselves, not through a token --- */
+  .media{box-shadow:0 24px 64px rgba(0,0,0,.55)}
+  .media::after{box-shadow:none}
+  .card-label{box-shadow:inset 0 -1px 0 var(--border-ghost)}
+  .pin i{box-shadow:0 0 0 1px rgba(0,0,0,.7),0 0 8px color-mix(in srgb,var(--pin) 55%,transparent)}
+  .card:hover,.obj:hover,.summary-wrap:hover .summary{
+    box-shadow:var(--umbra),0 0 0 1px rgba(255,255,255,.14)}
+  /* and the reading in hand still outranks the pointer being over it, the way
+     it does where these two are first stated. Restating only the hover here put
+     it last in the file at equal specificity, so at 1x a picked card under the
+     pointer lost the modal outright — its ring, its lit edge and the ambient
+     shadow with them, which is a shadow going missing rather than a rim
+     getting simpler. */
+  .card.is-picked,.obj.is-picked,.summary-wrap.is-picked .summary{box-shadow:var(--modal)}
+  .card.is-picked::before,.summary-wrap.is-picked .summary::before{box-shadow:var(--modal-lit)}
+
+  /* ---- the strip's own marks -------------------------------------------
+     The frame draws the risk upright at 1.5 and its diamond at 4.1; timeline.js
+     already rounds where each one stands at this ratio, and these give them a
+     width that lands on the grid when they get there. */
+  .tl-risk i{width:1px;margin-left:-.5px}
+  .tl-risk:hover i,.tl-risk:focus-visible i{width:2px;margin-left:-1px}
+  .tl-risk i::before{top:1px;width:4px;height:4px;margin-left:-2px}
+  .tl-mark::after{width:5px;height:5px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  /* scroll-behavior is the one kind of movement the three properties above do
+     not reach, and the shelf declares it: choosing a signal scrolls the ribbon
+     to it, and the wheel over it scrolls it sideways. */
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+}

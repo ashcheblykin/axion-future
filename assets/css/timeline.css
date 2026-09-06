@@ -1,0 +1,94 @@
+/* =============================================================================
+   timeline.css — the timeline widget (docs/SPEC.md §4, Figma 5405:87767).
+   768×135: padding 8, radius 12, --mat-12 on a --spectrum ring. A head row
+   (which month, what it reads, which branch) over a plot box (--mat-05,
+   radius 4 4 10 10) that holds the 736×57 strip and the row of months.
+   Every number is the frame's at 1920×1080. Given less room the widget keeps
+   its heights: the strip is laid out again at its width (timeline.js) and the
+   row of months thins out so the labels never overflow.
+   ============================================================================= */
+
+.tl-widget{position:relative;width:768px;max-width:100%;container:tl/inline-size;display:flex;flex-direction:column;gap:4px;padding:8px;
+  border-radius:12px;background:var(--mat-12);box-shadow:var(--spectrum);
+  backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum));
+  font-family:var(--font);color:var(--fg-primary);user-select:none;-webkit-user-select:none}
+
+/* ─── the head: which month, what it reads there, on which branch ───────── */
+.tl-head{display:flex;align-items:center;gap:8px;height:28px;padding-left:8px}
+/* control text: Figma sets it 10/6/8 in a 24 box, so the glyphs sit 2px above where a 20 line box puts them */
+.tl-month{flex:none;padding-bottom:4px;font-size:14px;font-weight:500;line-height:20px;white-space:nowrap}
+/* the reading is not in the frame, which stands on NOW: it is hidden until the handle has left or is being dragged */
+.tl-read{flex:1;min-width:0;padding-right:8px;text-align:right;font-size:12px;line-height:16px;
+  color:var(--fg-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-read-v{font-weight:500;color:var(--control-fg-subtle)}
+/* the way back is not in the frame because the frame stands on NOW; it is offered once the handle has left */
+.tl-now{flex:none;height:24px;white-space:nowrap}
+/* the seg keeps the right edge whether or not the reading stands between it and the month */
+.tl-seg{flex:none;margin-left:auto}
+/* control labels: the frame sets them 1px above the chip's centre (SPEC §1) */
+.tl-seg .seg-btn{padding-top:3px;padding-bottom:5px}
+
+/* ─── the plot: the strip and the months under it ───────────────────────── */
+.tl-plot{position:relative;flex:none;display:flex;flex-direction:column;gap:8px;height:87px;padding:0 8px 8px;
+  border-radius:4px 4px 10px 10px;background:var(--mat-05);overflow:clip;overflow-clip-margin:4px}
+.tl-track{position:relative;flex:none;height:57px;border-bottom:1px solid var(--border-ghost);cursor:ew-resize;touch-action:none}
+/* the record's ground reaches the plate's own edge rather than the scale's, so the strip reads lit up to the record's end */
+.tl-past{position:absolute;left:-8px;top:0;height:57px;background:var(--mat-b05);border-top-left-radius:4px;pointer-events:none}
+/* the strip takes the track's width (736 in the frame); timeline.js draws it in those pixels, never scaled */
+.tl-svg{position:absolute;left:0;top:0;width:100%;height:57px;overflow:visible;display:block;outline:none}
+.tl-svg:focus-visible{outline:2px solid var(--brand);outline-offset:-2px;border-radius:2px}
+.tl-svg text{font-family:var(--font);pointer-events:none}
+
+.tl-tgt-label{font-size:10px;font-weight:400;fill:var(--fc-act)}
+/* dotted, the way the frame draws every projection: a short dash every six pixels, the first centred on the
+   line's own start. The periods are the frame's (measured, they run a hair over 6), so the dots land on its. */
+.tl-tgt{stroke:var(--fc-act);stroke-width:1.5;stroke-linecap:butt;stroke-dasharray:1.2 4.816;stroke-dashoffset:-.4;fill:none}
+.tl-rec{stroke:var(--fg-primary);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round;fill:none}
+/* both branches at full colour, as the frame draws them; the one being read (.is-on) is drawn over the other */
+.tl-fc{fill:none;stroke-width:1.75;stroke-linecap:butt;stroke-dasharray:1.7 4.32;stroke-dashoffset:.85}
+
+/* where the handle stands: the one upright the strip draws solid */
+.tl-handle{fill:var(--fg-primary);transition:transform .16s var(--ease)}
+.tl-widget.is-dragging .tl-handle{transition:none}
+
+/* the things you can put a pointer on */
+.tl-pin{cursor:pointer;outline:none}
+.tl-pin:focus-visible{outline:2px solid var(--brand);outline-offset:1px;border-radius:50%}
+.tl-hit{fill:transparent;pointer-events:all}
+.tl-pt-dot{fill:var(--fg-primary);opacity:0;transition:opacity .16s var(--ease)}
+.tl-pt:hover .tl-pt-dot,.tl-pt:focus-visible .tl-pt-dot{opacity:1}
+/* the record's own diamonds, 4.9 on a side, the frame's 6.93 across */
+.tl-mark-d{fill:var(--fg-primary);transform-box:fill-box;transform-origin:center;transform:rotate(45deg);
+  transition:transform .16s var(--ease)}
+.tl-mark:hover .tl-mark-d,.tl-mark:focus-visible .tl-mark-d{transform:rotate(45deg) scale(1.5)}
+/* the month the score dips under the target if nothing is done: the whole height and the diamond that caps it */
+.tl-risk-stem{stroke:var(--fc-act);stroke-width:1;transition:stroke-width .16s var(--ease)}
+.tl-risk:hover .tl-risk-stem,.tl-risk:focus-visible .tl-risk-stem{stroke-width:2}
+.tl-risk-cap{fill:var(--fc-act)}
+.tl-risk:focus-visible{border-radius:4px}
+
+/* the months are type, not pixels on the strip: eleven quarters spread edge to edge */
+.tl-months{flex:none;display:flex;align-items:center;justify-content:space-between;height:14px;
+  font-size:12px;font-weight:400;line-height:14px;color:var(--fg-primary);white-space:nowrap}
+.tl-mo{flex:none;height:14px;padding:0;font:inherit;line-height:14px;color:inherit;border-radius:3px;
+  text-decoration:underline transparent;text-underline-offset:3px;text-decoration-thickness:1px;
+  transition:text-decoration-color .14s var(--ease),color .14s var(--ease)}
+.tl-mo:hover,.tl-mo:focus-visible{text-decoration-color:var(--fg-tertiary)}
+.tl-mo[aria-current="true"]{text-decoration-color:var(--fg-primary)}
+.tl-mo:focus-visible{outline:none;box-shadow:0 0 0 2px var(--brand)}
+/* the eleven labels run 566 wide: under 658 the row keeps every other quarter (the ends among them), under 372 the
+   ends and the middle. The keys still walk every month. */
+@container tl (min-width:372px) and (max-width:657px){.tl-mo:nth-child(even){display:none}}
+@container tl (max-width:371px){.tl-mo:not(:nth-child(5n+1)){display:none}}
+
+/* ─── the tooltip: the same material every floating chip wears ──────────── */
+.tl-tip{position:absolute;left:0;top:0;z-index:3;transform:translate(-50%,-100%);padding:4px 8px;border-radius:6px;
+  font-size:12px;font-weight:400;line-height:14px;white-space:nowrap;color:var(--control-fg-subtle);
+  background:var(--mat-over);box-shadow:var(--umbra);
+  backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s));
+  pointer-events:none;opacity:0;visibility:hidden;transition:opacity .12s var(--ease),visibility .12s}
+.tl-tip.is-on{opacity:1;visibility:visible}
+
+@media (prefers-reduced-motion:reduce){
+  .tl-handle,.tl-pt-dot,.tl-mark-d,.tl-risk-stem,.tl-mo,.tl-tip{transition:none}
+}

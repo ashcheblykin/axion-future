@@ -1,0 +1,178 @@
+/* =============================================================================
+   library.css — the Library page (docs/SPEC.md §3, Figma 5414:185044).
+   The gen header, the axion_sense.frames sheet, the rows footer, the frame
+   detail panel, the map view and the popovers' own controls. Every number is
+   the frame's at 1920×1080; the page is the 1836‑wide main panel.
+   ============================================================================= */
+
+.page-library{
+  display:flex;flex-direction:column;
+  --lib-line:rgba(253,253,253,.05);          /* row dividers and the header row's */
+  --lib-line-v:var(--border-primary);        /* the column dividers inside rows read a shade brighter in the frame */
+  --lib-sheet-bg:var(--surface-flat);        /* the panel's --mat-05 flattened on the frame ground — an opaque
+                                                stand‑in so rows can scroll beneath the sticky header row */
+}
+/* The Library frame has no project sidebar: the sheet starts at the main panel's
+   edge. The shell shows the sidebar on every page, so the page folds it away
+   itself (the agent‑centric concept keeps it — it is the only navigation there). */
+html[data-page="library"]:not([data-concept="agent"]) .sidebar{display:none}
+/* Two things follow from hiding it here rather than through data-sidebar. The shell still folds
+   the sidebar under 1000 and puts up the fold-back sliver plus 52 of header indent for it — this
+   page has no sidebar to fold, so it takes neither. And with the rail folded the page's header
+   starts at the panel's own edge, under the rail's peek, so it steps past that one itself
+   (8 + 36 + 8, as app.css does). Both are (0,4,1) and load after app.css. */
+html[data-page="library"]:not([data-concept="agent"]) .sidebar-peek{display:none!important}
+html[data-page="library"]:not([data-concept="agent"])[data-sidebar="off"] .gen-header{padding-left:8px}
+html[data-page="library"]:not([data-concept="agent"])[data-rail="off"] .gen-header{padding-left:52px}
+
+/* ─── the header ───────────────────────────────────────────────────────── */
+.lib-header{flex:none;gap:8px;position:relative;z-index:5;box-shadow:inset 0 -1px 0 var(--border-primary);
+  background:var(--mat-05);backdrop-filter:blur(var(--blur-window));-webkit-backdrop-filter:blur(var(--blur-window))}
+.lib-header .hdr-nav{flex:1;min-width:0;display:flex;align-items:center;gap:4px}
+/* the frame draws the two carets as 20px glyphs in their 28 boxes, touching */
+.lib-header .hdr-nav .hdr-wrap{gap:0}
+.lib-header .hdr-nav .btn28{padding:4px}
+.lib-header .hdr-nav .btn28 .ic{width:20px;height:20px}
+.lib-header .hdr-actions{flex:none;display:flex;align-items:center;gap:8px}
+.lib-title{height:36px;width:200px;min-width:96px;max-width:520px;padding:0 8px 1px;border:0;border-radius:6px;background:transparent;
+  outline:0;font-size:16px;font-weight:500;line-height:24px;color:var(--fg-primary);
+  transition:background var(--t-state),box-shadow var(--t-state)}
+.lib-title:hover{background:var(--control-bg-transparent-hover)}
+.lib-title:focus,.lib-title:focus-visible{outline:none;background:var(--control-bg-transparent-hover);box-shadow:inset 0 0 0 1px rgba(125,123,255,.6)}
+.lib-header .btn-ghost.is-on{background:var(--control-bg-transparent-pressed);color:var(--fg-primary)}
+/* a dot on the funnel while filters are on */
+.lib-header .btn-ghost.has-dot{position:relative}
+.lib-header .btn-ghost.has-dot::after{content:"";position:absolute;right:6px;top:6px;width:6px;height:6px;border-radius:50%;background:var(--info);
+  box-shadow:0 0 0 2px var(--lib-sheet-bg)}
+
+/* ─── the body: a sheet that scrolls both ways ─────────────────────────── */
+.lib-body{flex:1;min-height:0;position:relative}
+.lib-scroll{position:absolute;inset:0;overflow:auto;padding:8px 8px 60px;scrollbar-width:none;overscroll-behavior:contain}
+.lib-scroll::-webkit-scrollbar{display:none}
+.lib-sheet{display:flex;flex-direction:column;width:max-content;min-width:100%}
+.lib-thead{position:sticky;top:0;z-index:2;display:flex;align-items:stretch;height:33px;border-bottom:1px solid var(--lib-line);background:var(--lib-sheet-bg);
+  box-shadow:0 -8px 0 0 var(--lib-sheet-bg)}   /* the sheet's top padding, painted, so rows do not show above the pinned header */
+.lib-th{flex:none;display:flex;align-items:center;gap:6px;height:32px;padding:8px;color:var(--control-fg-subtle);
+  font-size:12px;font-weight:500;line-height:16px;white-space:nowrap;overflow:hidden;cursor:pointer;text-align:left;
+  transition:background var(--t-state),color var(--t-state)}
+.lib-th:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.lib-th:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--brand)}
+.lib-th .ic{color:var(--control-fg-subtle)}
+.lib-th>span{min-width:0;overflow:hidden;text-overflow:ellipsis;padding-bottom:1px}
+.lib-th .lib-sort{color:var(--fg-primary)}
+.lib-div{flex:none;width:1px;background:var(--lib-line)}
+.lib-tbody{display:flex;flex-direction:column}
+.lib-tr{display:flex;align-items:stretch;height:73px;border-bottom:1px solid var(--lib-line);scroll-margin-top:33px;
+  transition:background var(--t-state);outline-offset:-2px}
+.lib-tr .lib-div{background:var(--lib-line-v)}
+.lib-tr:hover,.lib-tr.is-selected{background:var(--mat-12)}
+.lib-tr:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--brand)}
+.lib-tr.is-hit{background:rgba(76,180,255,.07);box-shadow:inset 2px 0 0 var(--info)}
+.lib-tr.is-hit:hover,.lib-tr.is-hit.is-selected{background:rgba(76,180,255,.14)}
+.lib-tr.is-hit:focus-visible{box-shadow:inset 2px 0 0 var(--info),inset 0 0 0 2px var(--brand)}
+.lib-td{flex:none;display:flex;align-items:center;min-width:0;height:72px;padding:8px;font-size:12px;line-height:16px;color:var(--fg-primary);overflow:hidden}
+.lib-td>span{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:2px}   /* glyphs a px above centre, the design's convention */
+.lib-td--num{justify-content:flex-end;font-variant-numeric:tabular-nums}
+.lib-td--id{font-weight:500;color:var(--fg-inverse-tertiary)}
+.lib-td--mono{font-family:var(--font-mono)}
+.lib-td .lib-empty{color:var(--fg-inverse-tertiary)}
+.lib-td--tags{flex-direction:column;align-items:stretch;justify-content:center;gap:4px}
+.lib-td--tags .badge{display:block;height:16px;padding:1px 4px 3px;font-size:10px;font-weight:500;line-height:12px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.lib-none{display:flex;align-items:center;gap:8px;height:72px;padding:8px 16px;font-size:14px;line-height:20px;color:var(--fg-tertiary);white-space:nowrap}
+.lib-none .ic{color:var(--fg-tertiary)}
+
+/* view settings: density, dividers, wrapping tags */
+.lib-sheet[data-density="compact"] .lib-tr{height:57px}
+.lib-sheet[data-density="compact"] .lib-td{height:56px}
+.lib-sheet[data-density="compact"] .lib-td--tags{padding:2px 8px;gap:2px}
+.lib-sheet[data-dividers="off"] .lib-div{background:transparent}
+.lib-sheet[data-dividers="off"] .lib-tr,.lib-sheet[data-dividers="off"] .lib-thead{border-bottom-color:transparent}
+.lib-sheet[data-wrap="on"] .lib-tr{height:auto;min-height:73px}
+.lib-sheet[data-wrap="on"] .lib-td{height:auto;min-height:72px;align-self:stretch}
+.lib-sheet[data-wrap="on"] .lib-td--tags .badge{height:auto;white-space:normal;overflow-wrap:anywhere}
+
+/* ─── the map view ─────────────────────────────────────────────────────── */
+.lib-map{position:absolute;inset:0;overflow:hidden;background:#04060b}
+.lib-map>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.92}
+.lib-map>iframe{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .28s var(--ease)}
+.lib-map.is-live>iframe{opacity:1}
+.lib-legend{position:absolute;left:16px;top:16px;z-index:2;display:flex;align-items:center;gap:6px;height:28px;padding:0 10px 1px 8px;border-radius:8px;
+  background:var(--mat-12);box-shadow:var(--spectrum);backdrop-filter:blur(var(--blur-s));-webkit-backdrop-filter:blur(var(--blur-s));
+  font-size:12px;line-height:14px;color:var(--control-fg-subtle);white-space:nowrap}
+.lib-legend b{font-weight:500;color:var(--fg-primary)}
+.lib-legend .dot{--dot:var(--info)}
+
+/* ─── the rows footer ──────────────────────────────────────────────────── */
+.lib-rows{position:absolute;left:0;right:0;bottom:0;z-index:4;display:flex;align-items:center;gap:8px;height:52px;padding:8px 8px 8px 16px;
+  background:var(--mat-05);box-shadow:var(--spectrum);backdrop-filter:blur(var(--blur-spectrum));-webkit-backdrop-filter:blur(var(--blur-spectrum))}
+.lib-foot-label{flex:none;font-size:14px;line-height:20px;padding-bottom:1px;color:var(--control-fg-subtle-ghost);white-space:nowrap}
+.lib-per{flex:none;display:flex;align-items:center;gap:0;height:36px;padding:4px;border-radius:8px;background:var(--mat-b05);
+  color:var(--fg-primary);font-size:14px;line-height:20px;transition:box-shadow var(--t-state)}
+.lib-per:hover,.lib-per[aria-expanded="true"]{box-shadow:inset 0 0 0 1px var(--border-primary)}
+.lib-per>span{padding:0 6px 1px 8px}
+.lib-per>i{display:grid;place-items:center;width:28px;height:28px;border-radius:6px;color:var(--control-fg-subtle)}
+.lib-per>i .ic{width:16px;height:16px}
+.lib-foot-mid{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px}
+.lib-foot-count{font-size:12px;line-height:14px;color:var(--fg-tertiary);white-space:nowrap}
+.lib-chip{display:inline-flex;align-items:center;gap:2px;height:24px;padding:0 4px 0 8px;border-radius:6px;font-size:12px;line-height:14px;
+  color:var(--control-fg-subtle);background:var(--control-bg-transparent-pressed);white-space:nowrap;animation:libchip .2s var(--ease) both}
+.lib-chip--hit{color:var(--info);background:rgba(76,180,255,.14)}
+.lib-chip-x{display:inline-flex;align-items:center;height:20px;padding:0 4px;border-radius:4px;font-size:12px;line-height:14px;color:inherit;opacity:.8;
+  transition:background var(--t-state),opacity var(--t-state)}
+.lib-chip-x:hover{background:rgba(253,253,253,.1);opacity:1}
+.lib-chip-x:focus-visible{outline-offset:0}
+@keyframes libchip{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.lib-foot-nav{flex:none;display:flex;align-items:center;gap:8px}
+/* the pager keeps its full weight at either end, as the frame draws it; the end is announced, not dimmed */
+.lib-foot-nav .btn-ghost[aria-disabled="true"]{cursor:default}
+.lib-foot-nav .btn-ghost[aria-disabled="true"]:hover{background:none;color:var(--control-fg-subtle)}
+
+/* ─── the frame detail panel ───────────────────────────────────────────── */
+/* the frame puts the panel at 481 with 523 of height; a shorter page keeps it clear of the header and the footer */
+.lib-panel{position:absolute;right:8px;top:min(481px,calc(100% - min(523px,100% - 128px) - 60px));z-index:6;width:min(351px,calc(100% - 16px));height:min(523px,calc(100% - 128px));display:flex;flex-direction:column;border-radius:16px;
+  background:var(--mat-12);box-shadow:var(--modal-2);backdrop-filter:blur(var(--blur-modal));-webkit-backdrop-filter:blur(var(--blur-modal));
+  opacity:0;transform:translateX(12px);transition:opacity .2s var(--ease),transform .2s var(--ease)}
+.lib-panel.is-open{opacity:1;transform:none}
+.lib-panel-head{flex:none;display:flex;align-items:center;gap:8px;height:48px;padding:6px 12px 6px 16px}
+.lib-panel-title{flex:1;min-width:0;font-size:16px;font-weight:500;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-panel-x{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--control-fg-subtle);transition:background var(--t-state),color var(--t-state)}
+.lib-panel-x:hover{background:var(--control-bg-transparent-hover);color:var(--fg-primary)}
+.lib-panel-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:0 16px 24px;scrollbar-width:none;overscroll-behavior:contain}
+.lib-panel-body::-webkit-scrollbar{display:none}
+.lib-panel-photo{flex:none;width:100%;aspect-ratio:1044/548;object-fit:cover;border-radius:4px;background:var(--control-bg-transparent-hover)}
+.lib-panel-h{flex:none;font-size:14px;font-weight:500;line-height:20px;padding-top:8px}
+.lib-panel-tags{display:flex;flex-direction:column;align-items:flex-start;gap:4px}   /* one chip a line, hugging its text — as the frame */
+.lib-panel-tags .badge{max-width:100%}
+.lib-panel-tags .badge>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lib-data{display:flex;flex-direction:column;gap:4px}
+.lib-drow{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:4px 0;font-size:14px;line-height:20px}
+.lib-drow:first-child{padding-top:0}
+.lib-dl{flex:none;color:var(--fg-tertiary)}
+.lib-dv{flex:1;min-width:0;text-align:right;color:var(--fg-primary);overflow-wrap:anywhere}
+.lib-dv.is-mono{font-family:var(--font-mono)}
+.lib-dv .badge{vertical-align:2px}
+.lib-hr{flex:none;height:1px;margin:0;border:0;background:var(--border-ghost)}
+
+/* ─── the popovers' own rows ───────────────────────────────────────────── */
+.lib-pop-title{padding:8px 8px 2px;font-size:12px;line-height:14px;color:var(--fg-tertiary)}
+.lib-pop-title:first-child{padding-top:4px}
+.pop-row.lib-pop-check{width:100%;text-align:left}
+.pop-row.lib-pop-check>span,.pop-row>.lib-pop-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop-row .check .ic{width:12px;height:12px}
+.lib-pop-seg{margin-left:auto;flex:none}
+.lib-pop-seg .seg-btn{min-width:44px;justify-content:center}
+.lib-pop-dates{gap:8px}
+.lib-pop-dates:hover{background:none}
+.lib-date{flex:1;min-width:0;height:28px;padding:0 6px;border:0;border-radius:6px;background:var(--control-bg-transparent-hover);
+  box-shadow:inset 0 0 0 1px var(--border-ghost);color:var(--fg-primary);font-size:12px;line-height:16px;outline:0;color-scheme:dark;
+  transition:box-shadow var(--t-state)}
+.lib-date:focus{box-shadow:inset 0 0 0 1px var(--brand)}
+.lib-pop-dash{flex:none;color:var(--fg-tertiary)}
+.pop-row.lib-pop-switch{width:100%;text-align:left}
+.lib-switch{margin-left:auto}
+.lib-pop-note{padding:4px 8px 6px;font-size:12px;line-height:16px;color:var(--fg-tertiary)}
+
+@media (prefers-reduced-motion:reduce){
+  .lib-panel,.lib-chip,.lib-map>iframe{transition:none;animation:none}
+}

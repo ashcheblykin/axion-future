@@ -1,0 +1,11 @@
+{
+  "name": "axion-future",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Axion Gen · Future vision — the agent-centric concept, as a clickable page",
+  "type": "module",
+  "scripts": {
+    "serve": "node tools/serve.mjs 5320",
+    "sprite": "node tools/build-sprite.mjs"
+  }
+}
